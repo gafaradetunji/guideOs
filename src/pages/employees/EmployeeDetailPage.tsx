@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { useMemo } from 'react';
 import {
-  User, Briefcase, DollarSign, CalendarClock, Laptop, FileText, Shield, BarChart3,
-  History, StickyNote, FileBarChart, Mail, Phone, MapPin, Cake, Star,
+  User, Briefcase, Laptop, FileText, FileBarChart, Mail, Phone, MapPin, Star,
   Download, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react';
 import { PageHeader, Breadcrumbs, Tabs, Card, CardHeader, CardBody, Avatar, Badge, Button } from '../../components/ui';
 import { StatusBadge, ProgressBar } from '../../components/ui/Filters';
 import { Drawer } from '../../components/ui/Overlays';
 import {
-  employees, departments, teams, assets, payrollRuns, leaveRequests,
+  teams, payrollRuns,
   formatCurrency, formatDate, fullName, getDepartment, relativeTime, type Employee,
 } from '../../data/seed';
+import { useMockData } from '../../mock/MockDataProvider';
 import type { RouteProps } from '../../lib/types';
 
 export function EmployeeDetailPage({ path, navigate }: RouteProps) {
+  const { employees } = useMockData();
   const id = path.split('/').filter(Boolean)[1];
   const employee = employees.find(e => e.id === id) || employees[1];
   const dept = getDepartment(employee.departmentId);
@@ -72,16 +72,16 @@ export function EmployeeDetailPage({ path, navigate }: RouteProps) {
       <div className="p-6">
         {tab === 'overview' && <OverviewTab employee={employee} dept={dept} manager={manager} navigate={navigate} />}
         {tab === 'personal' && <PersonalTab employee={employee} />}
-        {tab === 'employment' && <EmploymentTab employee={employee} dept={dept} navigate={navigate} />}
+        {tab === 'employment' && <EmploymentTab employee={employee} dept={dept} />}
         {tab === 'payroll' && <PayrollTab employee={employee} navigate={navigate} />}
-        {tab === 'benefits' && <BenefitsTab employee={employee} />}
+        {tab === 'benefits' && <BenefitsTab />}
         {tab === 'leave' && <LeaveTab employee={employee} onRequest={() => setLeaveDrawerOpen(true)} />}
         {tab === 'assets' && <AssetsTab employee={employee} />}
         {tab === 'documents' && <DocumentsTab employee={employee} />}
-        {tab === 'permissions' && <PermissionsTab employee={employee} />}
-        {tab === 'performance' && <PerformanceTab employee={employee} />}
+        {tab === 'permissions' && <PermissionsTab />}
+        {tab === 'performance' && <PerformanceTab />}
         {tab === 'activity' && <ActivityTab employee={employee} />}
-        {tab === 'notes' && <NotesTab employee={employee} />}
+        {tab === 'notes' && <NotesTab />}
       </div>
 
       <Drawer open={leaveDrawerOpen} onClose={() => setLeaveDrawerOpen(false)} title={`Message ${employee.firstName}`} description="Send a direct message via GuideOS">
@@ -98,6 +98,7 @@ export function EmployeeDetailPage({ path, navigate }: RouteProps) {
 }
 
 function OverviewTab({ employee, dept, manager, navigate }: { employee: Employee; dept?: any; manager?: Employee; navigate: (to: string) => void }) {
+  const { assets, leaveRequests } = useMockData();
   const empAssets = assets.filter(a => a.assigneeId === employee.id);
   const empLeave = leaveRequests.filter(l => l.employeeId === employee.id);
 
@@ -225,7 +226,8 @@ function PersonalTab({ employee }: { employee: Employee }) {
   );
 }
 
-function EmploymentTab({ employee, dept, navigate }: { employee: Employee; dept?: any; navigate: (to: string) => void }) {
+function EmploymentTab({ employee, dept }: { employee: Employee; dept?: any }) {
+  const { employees } = useMockData();
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Card>
@@ -332,7 +334,7 @@ function PayrollTab({ employee, navigate }: { employee: Employee; navigate: (to:
   );
 }
 
-function BenefitsTab({ employee }: { employee: Employee }) {
+function BenefitsTab() {
   const benefits = [
     { name: 'Health Insurance (Family)', provider: 'AXA Mansard', status: 'active', value: '$8,400/yr' },
     { name: 'Life Insurance', provider: 'AIICO', status: 'active', value: '$50,000' },
@@ -363,12 +365,13 @@ function BenefitsTab({ employee }: { employee: Employee }) {
 }
 
 function LeaveTab({ employee, onRequest }: { employee: Employee; onRequest: () => void }) {
+  const { leaveRequests } = useMockData();
   const empLeave = leaveRequests.filter(l => l.employeeId === employee.id);
   const balance = [
     { type: 'Annual Leave', used: 6, total: 21, tone: 'brand' as const },
     { type: 'Sick Leave', used: 2, total: 10, tone: 'amber' as const },
     { type: 'Compassionate', used: 0, total: 5, tone: 'green' as const },
-    { type: 'Unpaid Leave', used: 0, total: 30, tone: 'gray' as const },
+    { type: 'Unpaid Leave', used: 0, total: 30, tone: 'brand' as const },
   ];
 
   return (
@@ -409,6 +412,7 @@ function LeaveTab({ employee, onRequest }: { employee: Employee; onRequest: () =
 }
 
 function AssetsTab({ employee }: { employee: Employee }) {
+  const { assets } = useMockData();
   const empAssets = assets.filter(a => a.assigneeId === employee.id);
   return (
     <Card>
@@ -470,7 +474,7 @@ function DocumentsTab({ employee }: { employee: Employee }) {
   );
 }
 
-function PermissionsTab({ employee }: { employee: Employee }) {
+function PermissionsTab() {
   const roles = ['Super Admin', 'HR Admin', 'Finance', 'Manager', 'Employee'];
   const permissions = [
     { module: 'Employees', actions: ['View', 'Create', 'Edit', 'Deactivate'], granted: [true, true, true, false] },
@@ -486,7 +490,7 @@ function PermissionsTab({ employee }: { employee: Employee }) {
         <CardBody>
           <div className="flex flex-wrap gap-2">
             {roles.map(r => (
-              <button key={r} className={['px-3 py-1.5 rounded-lg text-xs font-medium border', r === 'HR Admin' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-white border-ink-200 text-ink-600 hover:bg-ink-50']}>{r}</button>
+              <button key={r} className={['px-3 py-1.5 rounded-lg text-xs font-medium border', r === 'HR Admin' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-white border-ink-200 text-ink-600 hover:bg-ink-50'].join(' ')}>{r}</button>
             ))}
           </div>
         </CardBody>
@@ -500,7 +504,7 @@ function PermissionsTab({ employee }: { employee: Employee }) {
                 <p className="text-sm font-medium text-ink-900 mb-2">{p.module}</p>
                 <div className="flex flex-wrap gap-2">
                   {p.actions.map((a, i) => (
-                    <span key={a} className={['inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium', p.granted[i] ? 'bg-emerald-50 text-emerald-700' : 'bg-ink-100 text-ink-400']}>
+                    <span key={a} className={['inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium', p.granted[i] ? 'bg-emerald-50 text-emerald-700' : 'bg-ink-100 text-ink-400'].join(' ')}>
                       {p.granted[i] ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />} {a}
                     </span>
                   ))}
@@ -514,7 +518,7 @@ function PermissionsTab({ employee }: { employee: Employee }) {
   );
 }
 
-function PerformanceTab({ employee }: { employee: Employee }) {
+function PerformanceTab() {
   const reviews = [
     { cycle: 'H1 2025', rating: 4.2, status: 'completed', reviewer: 'Sade Adewale' },
     { cycle: 'H2 2024', rating: 4.0, status: 'completed', reviewer: 'Sade Adewale' },
@@ -598,7 +602,7 @@ function ActivityTab({ employee }: { employee: Employee }) {
   );
 }
 
-function NotesTab({ employee }: { employee: Employee }) {
+function NotesTab() {
   const [note, setNote] = useState('');
   const [notes, setNotes] = useState([
     { author: 'Fatima Ibrahim', text: 'Strong contributor. Recently led onboarding redesign project successfully.', time: '2 days ago' },

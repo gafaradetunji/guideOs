@@ -3,11 +3,11 @@ import { type ReactNode } from 'react';
 export function FilterSelect({ label, value, onChange, options }: { label: string; value?: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
   return (
     <div className="flex items-center gap-1.5">
-      {label && <span className="text-xs text-ink-500 whitespace-nowrap">{label}</span>}
+      {label && <span className="text-[10px] font-mono uppercase tracking-[0.08em] text-ink-500 whitespace-nowrap">{label}</span>}
       <select
         value={value ?? ''}
         onChange={e => onChange(e.target.value)}
-        className="h-8 rounded-lg border border-ink-200 bg-white px-2.5 text-xs text-ink-700 focus-ring"
+        className="h-8 rounded-md border border-ink-300 bg-white/90 px-2.5 text-xs text-ink-700 shadow-sm focus:border-brand-400 focus-ring"
       >
         <option value="">All</option>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -22,7 +22,7 @@ export function Checkbox({ checked, onChange, indeterminate }: { checked: boolea
       onClick={() => onChange?.(!checked)}
       className={[
         'h-4 w-4 rounded border flex items-center justify-center transition-colors flex-shrink-0',
-        checked || indeterminate ? 'bg-brand-600 border-brand-600' : 'bg-white border-ink-300 hover:border-ink-400',
+        checked || indeterminate ? 'bg-ink-900 border-ink-900' : 'bg-white border-ink-300 hover:border-ink-500',
       ].join(' ')}
       aria-checked={checked}
       role="checkbox"
@@ -49,7 +49,7 @@ export function Pagination({ page, totalPages, onPage }: { page: number; totalPa
 }
 
 export function StatusPill({ status }: { status: string }) {
-  return <span className={['inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-medium capitalize'].join(' ')} />;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-mono uppercase tracking-[0.08em]">{status}</span>;
 }
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
@@ -110,7 +110,7 @@ export function StatusBadge({ status, label }: { status: string; label?: string 
     gray: 'bg-ink-100 text-ink-600 border-ink-200',
     purple: 'bg-violet-50 text-violet-700 border-violet-100',
   }[r.tone];
-  return <span className={['inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-medium', toneClass].join(' ')}>{r.text}</span>;
+  return <span className={['inline-flex items-center px-2 py-1 rounded-md border text-[10px] font-mono uppercase tracking-[0.08em]', toneClass].join(' ')}>{r.text}</span>;
 }
 
 export function ProgressBar({ value, tone = 'brand' }: { value: number; tone?: 'brand' | 'green' | 'amber' | 'red' }) {

@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import { Search, Download, UserPlus, MoreHorizontal, Filter, Users, ChevronDown } from 'lucide-react';
 import { PageHeader, Breadcrumbs, Card, Avatar, Button, Input, Table, THead, Th, TBody, Tr, Td, EmptyState } from '../../components/ui';
 import { FilterSelect, Checkbox, StatusBadge, Pagination } from '../../components/ui/Filters';
-import { employees, departments, teams, fullName, formatDate, type Employee } from '../../data/seed';
+import { departments, teams, fullName, formatDate, type Employee } from '../../data/seed';
+import { useMockData } from '../../mock/MockDataProvider';
 import type { RouteProps } from '../../lib/types';
 
 const PAGE_SIZE = 12;
 
 export function EmployeeDirectoryPage({ navigate }: RouteProps) {
+  const { employees } = useMockData();
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -155,6 +157,7 @@ export function EmployeeDirectoryPage({ navigate }: RouteProps) {
 }
 
 export function DepartmentsPage({ navigate }: RouteProps) {
+  const { employees } = useMockData();
   return (
     <div>
       <PageHeader

@@ -4,10 +4,15 @@ import { PageHeader, Breadcrumbs, Card, CardHeader, CardBody, Avatar, Button, In
 import { FilterSelect, StatusBadge, ProgressBar, Pagination, Checkbox } from '../../components/ui/Filters';
 import { Drawer, Modal } from '../../components/ui/Overlays';
 import {
-  leaveRequests, assets, tickets, articles, projects, candidates, positions, expenses, complianceItems,
+  tickets, articles, projects, candidates, positions, expenses, complianceItems,
   employees, departments, payrollRuns, formatCurrency, formatDate, fullName, getEmployee, relativeTime,
+  type Asset, type LeaveRequest,
 } from '../../data/seed';
+import { useMockData } from '../../mock/MockDataProvider';
 import type { RouteProps } from '../../lib/types';
+
+type LeaveRequestRow = LeaveRequest;
+type AssetRow = Asset;
 
 const assetIcon = (t: string) => {
   switch (t) {
@@ -22,15 +27,21 @@ const assetIcon = (t: string) => {
 
 /* ============ LEAVE ============ */
 export function LeaveRequestsPage({ navigate }: RouteProps) {
+  const {
+    leaveRequests: storedLeaveRequests,
+    employees: storedEmployees,
+    approveLeaveRequest,
+    rejectLeaveRequest,
+  } = useMockData();
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [drawerLeave, setDrawerLeave] = useState<typeof leaveRequests[0] | null>(null);
-  const filtered = leaveRequests.filter(l => {
+  const [drawerLeave, setDrawerLeave] = useState<LeaveRequestRow | null>(null);
+  const filtered = storedLeaveRequests.filter(l => {
     if (typeFilter && l.type !== typeFilter) return false;
     if (statusFilter && l.status !== statusFilter) return false;
     return true;
   });
-  const pending = leaveRequests.filter(l => l.status === 'pending').length;
+  const pending = storedLeaveRequests.filter(l => l.status === 'pending').length;
 
   return (
     <div>
@@ -44,7 +55,7 @@ export function LeaveRequestsPage({ navigate }: RouteProps) {
           <THead><tr><Th>Employee</Th><Th>Type</Th><Th>Dates</Th><Th>Days</Th><Th>Reason</Th><Th>Status</Th><Th>Approver</Th></tr></THead>
           <TBody>
             {filtered.map(l => {
-              const emp = getEmployee(l.employeeId);
+              const emp = storedEmployees.find(employee => employee.id === l.employeeId);
               return (
                 <Tr key={l.id} onClick={() => setDrawerLeave(l)}>
                   <Td><div className="flex items-center gap-2"><Avatar name={emp ? fullName(emp) : 'Unknown'} size={28} /><span className="text-sm font-medium text-ink-900">{emp ? fullName(emp) : 'Unknown'}</span></div></Td>
@@ -63,12 +74,12 @@ export function LeaveRequestsPage({ navigate }: RouteProps) {
 
       <Drawer open={!!drawerLeave} onClose={() => setDrawerLeave(null)} title="Leave Request" footer={
         <>
-          <Button variant="danger" size="sm" leftIcon={<X className="h-3.5 w-3.5" />} onClick={() => setDrawerLeave(null)}>Reject</Button>
-          <Button size="sm" leftIcon={<Check className="h-3.5 w-3.5" />} onClick={() => setDrawerLeave(null)}>Approve</Button>
+          <Button variant="danger" size="sm" leftIcon={<X className="h-3.5 w-3.5" />} onClick={() => { if (drawerLeave) rejectLeaveRequest(drawerLeave.id); setDrawerLeave(null); }}>Reject</Button>
+          <Button size="sm" leftIcon={<Check className="h-3.5 w-3.5" />} onClick={() => { if (drawerLeave) approveLeaveRequest(drawerLeave.id); setDrawerLeave(null); }}>Approve</Button>
         </>
       }>
         {drawerLeave && (() => {
-          const emp = getEmployee(drawerLeave.employeeId);
+          const emp = storedEmployees.find(employee => employee.id === drawerLeave.employeeId);
           return (
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-3"><Avatar name={emp ? fullName(emp) : 'Unknown'} size={48} /><div><p className="text-base font-semibold text-ink-900">{emp ? fullName(emp) : 'Unknown'}</p><p className="text-[11px] text-ink-500">{emp?.jobTitle}</p></div></div>
@@ -94,6 +105,7 @@ function Detail({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function LeaveCalendarPage({ navigate }: RouteProps) {
+  const { leaveRequests: storedLeaveRequests, employees: storedEmployees } = useMockData();
   const today = new Date(2025, 5, 20);
   const days = Array.from({ length: 35 }).map((_, i) => new Date(2025, 5, i - 0));
   return (
@@ -108,13 +120,13 @@ export function LeaveCalendarPage({ navigate }: RouteProps) {
             <div className="grid grid-cols-7 gap-1">
               {days.map((d, i) => {
                 const isToday = d.toDateString() === today.toDateString();
-                const dayLeaves = leaveRequests.filter(l => new Date(l.startDate) <= d && new Date(l.endDate) >= d).slice(0, 2);
+                const dayLeaves = storedLeaveRequests.filter(l => new Date(l.startDate) <= d && new Date(l.endDate) >= d).slice(0, 2);
                 const isCurrentMonth = d.getMonth() === 5;
                 return (
                   <div key={i} className={['min-h-[80px] p-1.5 rounded-lg border', isToday ? 'bg-brand-50 border-brand-200' : 'border-ink-100', !isCurrentMonth && 'opacity-40'].join(' ')}>
                     <p className="text-[11px] text-ink-500 mb-1">{d.getDate()}</p>
                     {dayLeaves.map(l => {
-                      const emp = getEmployee(l.employeeId);
+                      const emp = storedEmployees.find(employee => employee.id === l.employeeId);
                       return emp ? <div key={l.id} className="text-[10px] truncate px-1.5 py-0.5 mb-0.5 rounded bg-brand-100 text-brand-700">{emp.firstName}</div> : null;
                     })}
                   </div>
@@ -130,18 +142,39 @@ export function LeaveCalendarPage({ navigate }: RouteProps) {
 
 /* ============ ASSETS ============ */
 export function AssetsPage({ navigate }: RouteProps) {
+  const {
+    assets: storedAssets,
+    employees: storedEmployees,
+    createAsset,
+    assignAssetToEmployee,
+  } = useMockData();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [assignAsset, setAssignAsset] = useState<typeof assets[0] | null>(null);
+  const [assignAsset, setAssignAsset] = useState<AssetRow | null>(null);
   const [showAddAsset, setShowAddAsset] = useState(false);
-  const filtered = assets.filter(a => {
+  const [assetAssigneeId, setAssetAssigneeId] = useState('');
+  const [newAsset, setNewAsset] = useState({
+    name: '',
+    type: 'laptop' as AssetRow['type'],
+    brand: '',
+    model: '',
+    serial: '',
+    purchaseValue: '',
+    location: '',
+  });
+  const filtered = storedAssets.filter(a => {
     if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !a.serial.toLowerCase().includes(search.toLowerCase())) return false;
     if (typeFilter && a.type !== typeFilter) return false;
     if (statusFilter && a.status !== statusFilter) return false;
     return true;
   });
-  const stats = { total: assets.length, assigned: assets.filter(a => a.status === 'assigned').length, available: assets.filter(a => a.status === 'available').length, inRepair: assets.filter(a => a.status === 'in_repair').length };
+  const stats = {
+    total: storedAssets.length,
+    assigned: storedAssets.filter(a => a.status === 'assigned').length,
+    available: storedAssets.filter(a => a.status === 'available').length,
+    inRepair: storedAssets.filter(a => a.status === 'in_repair').length,
+  };
 
   return (
     <div>
@@ -159,11 +192,11 @@ export function AssetsPage({ navigate }: RouteProps) {
           <THead><tr><Th>Asset</Th><Th>Type</Th><Th>Serial</Th><Th>Assignee</Th><Th>Location</Th><Th>Value</Th><Th>Status</Th><Th></Th></tr></THead>
           <TBody>
             {filtered.map(a => (
-              <Tr key={a.id} onClick={() => setAssignAsset(a)}>
+              <Tr key={a.id} onClick={() => { setAssignAsset(a); setAssetAssigneeId(a.assigneeId || storedEmployees[0]?.id || ''); }}>
                 <Td><div className="flex items-center gap-2"><span className="h-8 w-8 rounded-lg bg-ink-100 text-ink-600 flex items-center justify-center">{assetIcon(a.type)}</span><div><p className="text-sm font-medium text-ink-900">{a.name}</p><p className="text-[11px] text-ink-500">{a.brand} {a.model}</p></div></div></Td>
                 <Td><span className="capitalize text-sm">{a.type}</span></Td>
                 <Td className="text-sm font-mono text-ink-500">{a.serial}</Td>
-                <Td>{a.assigneeId ? (() => { const e = getEmployee(a.assigneeId); return e ? <div className="flex items-center gap-2"><Avatar name={fullName(e)} size={24} /><span className="text-sm">{fullName(e)}</span></div> : null; })() : <span className="text-sm text-ink-400">—</span>}</Td>
+                <Td>{a.assigneeId ? (() => { const e = storedEmployees.find(employee => employee.id === a.assigneeId); return e ? <div className="flex items-center gap-2"><Avatar name={fullName(e)} size={24} /><span className="text-sm">{fullName(e)}</span></div> : null; })() : <span className="text-sm text-ink-400">—</span>}</Td>
                 <Td className="text-sm">{a.location}</Td>
                 <Td className="text-sm font-medium">{formatCurrency(a.purchaseValue)}</Td>
                 <Td><StatusBadge status={a.status} /></Td>
@@ -174,7 +207,7 @@ export function AssetsPage({ navigate }: RouteProps) {
         </Table>
       </div>
 
-      <Drawer open={!!assignAsset} onClose={() => setAssignAsset(null)} title={assignAsset?.name} description={assignAsset ? `${assignAsset.brand} ${assignAsset.model} • ${assignAsset.serial}` : ''} footer={<><Button variant="ghost" size="sm" onClick={() => setAssignAsset(null)}>Close</Button><Button size="sm" disabled={assignAsset?.status === 'assigned'}>Assign to Employee</Button></>}>
+      <Drawer open={!!assignAsset} onClose={() => setAssignAsset(null)} title={assignAsset?.name} description={assignAsset ? `${assignAsset.brand} ${assignAsset.model} • ${assignAsset.serial}` : ''} footer={<><Button variant="ghost" size="sm" onClick={() => setAssignAsset(null)}>Close</Button><Button size="sm" disabled={!assignAsset || !assetAssigneeId} onClick={() => { if (!assignAsset || !assetAssigneeId) return; assignAssetToEmployee(assignAsset.id, assetAssigneeId); setAssignAsset(null); }}>Assign to Employee</Button></>}>
         {assignAsset && (
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-3"><span className="h-12 w-12 rounded-lg bg-ink-100 text-ink-600 flex items-center justify-center">{assetIcon(assignAsset.type)}</span><div><StatusBadge status={assignAsset.status} /></div></div>
@@ -182,22 +215,30 @@ export function AssetsPage({ navigate }: RouteProps) {
               <Detail label="Purchase Date" value={formatDate(assignAsset.purchaseDate)} />
               <Detail label="Purchase Value" value={formatCurrency(assignAsset.purchaseValue)} />
               <Detail label="Location" value={assignAsset.location} />
-              <Detail label="Assigned To" value={assignAsset.assigneeId ? (getEmployee(assignAsset.assigneeId) ? fullName(getEmployee(assignAsset.assigneeId)!) : '—') : '—'} />
+              <Detail label="Assigned To" value={assignAsset.assigneeId ? (storedEmployees.find(employee => employee.id === assignAsset.assigneeId) ? fullName(storedEmployees.find(employee => employee.id === assignAsset.assigneeId)!) : '—') : '—'} />
+            </div>
+            <div>
+              <p className="text-xs text-ink-500 mb-1.5">Assign to employee</p>
+              <select value={assetAssigneeId} onChange={event => setAssetAssigneeId(event.target.value)} className="h-9 w-full rounded-md border border-ink-300 bg-white/90 px-3 text-sm text-ink-800 shadow-sm focus:border-brand-400 focus-ring">
+                {storedEmployees.filter(employee => employee.status !== 'inactive').map(employee => (
+                  <option key={employee.id} value={employee.id}>{fullName(employee)} • {employee.jobTitle}</option>
+                ))}
+              </select>
             </div>
           </div>
         )}
       </Drawer>
 
-      <Modal open={showAddAsset} onClose={() => setShowAddAsset(false)} title="Add New Asset" description="Register a new asset to your inventory" footer={<><Button variant="ghost" size="sm" onClick={() => setShowAddAsset(false)}>Cancel</Button><Button size="sm" onClick={() => setShowAddAsset(false)}>Create Asset</Button></>}>
+      <Modal open={showAddAsset} onClose={() => setShowAddAsset(false)} title="Add New Asset" description="Register a new asset to your inventory" footer={<><Button variant="ghost" size="sm" onClick={() => setShowAddAsset(false)}>Cancel</Button><Button size="sm" onClick={() => { createAsset({ name: newAsset.name, type: newAsset.type, brand: newAsset.brand, model: newAsset.model, serial: newAsset.serial, purchaseValue: Number(newAsset.purchaseValue) || 0, location: newAsset.location }); setNewAsset({ name: '', type: 'laptop', brand: '', model: '', serial: '', purchaseValue: '', location: '' }); setShowAddAsset(false); }}>Create Asset</Button></>}>
         <div className="space-y-3">
-          <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Asset Name *</label><Input placeholder="MacBook Pro 14&quot;" /></div>
+          <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Asset Name *</label><Input value={newAsset.name} onChange={event => setNewAsset(current => ({ ...current, name: event.target.value }))} placeholder="MacBook Pro 14&quot;" /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Type *</label><select className="h-9 w-full rounded-lg border border-ink-200 px-3 text-sm"><option>Laptop</option><option>Phone</option><option>Monitor</option><option>Accessory</option></select></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Brand *</label><Input placeholder="Apple" /></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Model</label><Input placeholder="M3 2024" /></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Serial #</label><Input placeholder="SN000000" /></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Purchase Value</label><Input type="number" placeholder="2000" /></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Location</label><Input placeholder="HQ - Lagos" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Type *</label><select value={newAsset.type} onChange={event => setNewAsset(current => ({ ...current, type: event.target.value as AssetRow['type'] }))} className="h-9 w-full rounded-lg border border-ink-200 px-3 text-sm"><option value="laptop">Laptop</option><option value="phone">Phone</option><option value="monitor">Monitor</option><option value="accessory">Accessory</option><option value="software">Software</option><option value="peripheral">Peripheral</option></select></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Brand *</label><Input value={newAsset.brand} onChange={event => setNewAsset(current => ({ ...current, brand: event.target.value }))} placeholder="Apple" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Model</label><Input value={newAsset.model} onChange={event => setNewAsset(current => ({ ...current, model: event.target.value }))} placeholder="M3 2024" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Serial #</label><Input value={newAsset.serial} onChange={event => setNewAsset(current => ({ ...current, serial: event.target.value }))} placeholder="SN000000" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Purchase Value</label><Input value={newAsset.purchaseValue} onChange={event => setNewAsset(current => ({ ...current, purchaseValue: event.target.value }))} type="number" placeholder="2000" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Location</label><Input value={newAsset.location} onChange={event => setNewAsset(current => ({ ...current, location: event.target.value }))} placeholder="HQ - Lagos" /></div>
           </div>
         </div>
       </Modal>
@@ -206,7 +247,8 @@ export function AssetsPage({ navigate }: RouteProps) {
 }
 
 export function AssetsAssignedPage({ navigate }: RouteProps) {
-  const assigned = assets.filter(a => a.status === 'assigned');
+  const { assets: storedAssets, employees: storedEmployees } = useMockData();
+  const assigned = storedAssets.filter(a => a.status === 'assigned');
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Assets', onClick: () => navigate('/assets') }, { label: 'Assigned' }]} />} title="Assigned Assets" description={`${assigned.length} assets currently assigned to employees`} />
@@ -215,7 +257,7 @@ export function AssetsAssignedPage({ navigate }: RouteProps) {
           <THead><tr><Th>Asset</Th><Th>Serial</Th><Th>Assignee</Th><Th>Department</Th><Th>Assigned On</Th><Th>Value</Th></tr></THead>
           <TBody>
             {assigned.map(a => {
-              const emp = a.assigneeId ? getEmployee(a.assigneeId) : undefined;
+              const emp = a.assigneeId ? storedEmployees.find(employee => employee.id === a.assigneeId) : undefined;
               const dept = emp ? getDepartment(emp.departmentId) : undefined;
               return (
                 <Tr key={a.id} onClick={() => navigate('/assets')}>

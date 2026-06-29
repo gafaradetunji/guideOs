@@ -12,20 +12,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
-  secondary: 'bg-ink-900 text-white hover:bg-ink-800 active:bg-ink-700 shadow-sm',
-  outline: 'bg-white border border-ink-200 text-ink-700 hover:bg-ink-50 hover:border-ink-300',
-  ghost: 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
-  subtle: 'bg-ink-100 text-ink-700 hover:bg-ink-200',
-  danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm',
+  primary: 'border border-ink-900 bg-ink-900 text-white hover:bg-ink-800 active:bg-ink-700 shadow-sm',
+  secondary: 'border border-brand-700 bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
+  outline: 'border border-ink-300 bg-white/85 text-ink-700 hover:bg-white hover:border-ink-400',
+  ghost: 'border border-transparent text-ink-600 hover:bg-ink-100/80 hover:text-ink-900',
+  subtle: 'border border-ink-200 bg-ink-100/80 text-ink-700 hover:bg-ink-200/80',
+  danger: 'border border-red-700 bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm',
 };
 
 const sizes: Record<Size, string> = {
-  xs: 'h-7 px-2.5 text-xs gap-1.5 rounded-md',
+  xs: 'h-7 px-2.5 text-[11px] gap-1.5 rounded-md',
   sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
-  md: 'h-9 px-3.5 text-sm gap-2 rounded-lg',
-  lg: 'h-10 px-4 text-sm gap-2 rounded-lg',
-  icon: 'h-9 w-9 rounded-lg',
+  md: 'h-9 px-3.5 text-sm gap-2 rounded-md',
+  lg: 'h-10 px-4 text-sm gap-2 rounded-md',
+  icon: 'h-9 w-9 rounded-md',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -37,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       disabled={disabled || loading}
       className={[
-        'inline-flex items-center justify-center font-medium transition-colors focus-ring whitespace-nowrap',
+        'inline-flex items-center justify-center font-medium tracking-[0.01em] transition-colors focus-ring whitespace-nowrap',
         'disabled:opacity-50 disabled:pointer-events-none',
         variants[variant],
         sizes[size],

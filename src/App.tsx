@@ -24,7 +24,7 @@ function App() {
   const page = renderRoute(path, navigate);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-50">
+    <div className="flex h-screen overflow-hidden bg-ink-50 console-grid">
       <Sidebar path={path} onNavigate={navigate} collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header path={path} onNavigate={navigate} />

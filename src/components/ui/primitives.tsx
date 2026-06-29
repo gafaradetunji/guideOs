@@ -2,7 +2,7 @@ import { type ReactNode, type HTMLAttributes, type TdHTMLAttributes, type ThHTML
 
 export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={['bg-white border border-ink-200 rounded-xl shadow-card', className].join(' ')} {...rest}>
+    <div className={['panel-sheen bg-white/90 border border-white/70 rounded-xl shadow-card', className].join(' ')} {...rest}>
       {children}
     </div>
   );
@@ -10,10 +10,10 @@ export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLD
 
 export function CardHeader({ title, subtitle, action }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-ink-200">
+    <div className="flex items-start justify-between gap-4 px-5 py-3.5 border-b border-ink-200/80">
       <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
-        {subtitle && <p className="text-xs text-ink-500 mt-0.5">{subtitle}</p>}
+        <h3 className="text-[13px] font-semibold tracking-[0.01em] text-ink-900">{title}</h3>
+        {subtitle && <p className="text-[11px] text-ink-500 mt-1">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -38,7 +38,7 @@ const toneMap: Record<Tone, string> = {
 
 export function Badge({ tone = 'gray', children, className = '', dot = false }: { tone?: Tone; children: ReactNode; className?: string; dot?: boolean }) {
   return (
-    <span className={['inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-md border', toneMap[tone], className].join(' ')}>
+    <span className={['inline-flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium font-mono uppercase tracking-[0.08em] rounded-md border', toneMap[tone], className].join(' ')}>
       {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />}
       {children}
     </span>
@@ -54,12 +54,12 @@ export function Table({ children, containerClassName = '' }: { children: ReactNo
 }
 
 export function THead({ children }: { children: ReactNode }) {
-  return <thead className="bg-ink-50 border-b border-ink-200">{children}</thead>;
+  return <thead className="bg-ink-900/[0.03] border-b border-ink-200">{children}</thead>;
 }
 
 export function Th({ children, className = '', ...rest }: ThHTMLAttributes<HTMLTableCellElement> & { children?: ReactNode }) {
   return (
-    <th className={['text-left text-[11px] font-semibold uppercase tracking-wide text-ink-500 px-4 py-2.5 whitespace-nowrap', className].join(' ')} {...rest}>
+    <th className={['text-left text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-ink-500 px-4 py-2.5 whitespace-nowrap', className].join(' ')} {...rest}>
       {children}
     </th>
   );
@@ -80,7 +80,7 @@ export function Td({ children, className = '', ...rest }: TdHTMLAttributes<HTMLT
 export function Tr({ children, className = '', onClick, ...rest }: { children: ReactNode; className?: string; onClick?: () => void }) {
   return (
     <tr
-      className={['bg-white transition-colors', onClick ? 'cursor-pointer hover:bg-ink-50' : '', className].join(' ')}
+      className={['bg-white/80 transition-colors', onClick ? 'cursor-pointer hover:bg-brand-50/40' : '', className].join(' ')}
       onClick={onClick}
       {...rest as any}
     >
@@ -91,11 +91,11 @@ export function Tr({ children, className = '', onClick, ...rest }: { children: R
 
 export function Avatar({ name, size = 32, src }: { name: string; size?: number; src?: string }) {
   const initials = name.split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
-  const palette = ['#3463ff', '#e84a18', '#0f1013', '#1731e1', '#43474f', '#9d2a11'];
+  const palette = ['#2563eb', '#0f172a', '#0f766e', '#4338ca', '#374151', '#0369a1'];
   const idx = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % palette.length;
   return (
     <span
-      className="inline-flex items-center justify-center rounded-full text-white font-medium overflow-hidden flex-shrink-0"
+      className="inline-flex items-center justify-center rounded-md text-white font-medium overflow-hidden flex-shrink-0 ring-1 ring-black/5"
       style={{ width: size, height: size, background: src ? undefined : palette[idx], fontSize: size * 0.4 }}
     >
       {src ? <img src={src} alt={name} className="h-full w-full object-cover" /> : initials}
@@ -106,7 +106,7 @@ export function Avatar({ name, size = 32, src }: { name: string; size?: number; 
 export function Input({ className = '', ...rest }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={['h-9 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm placeholder:text-ink-400 focus-ring', className].join(' ')}
+      className={['h-9 w-full rounded-md border border-ink-300 bg-white/90 px-3 text-sm text-ink-800 placeholder:text-ink-400 shadow-sm focus:border-brand-400 focus:bg-white focus-ring', className].join(' ')}
       {...rest}
     />
   );
@@ -115,7 +115,7 @@ export function Input({ className = '', ...rest }: React.InputHTMLAttributes<HTM
 export function Select({ className = '', children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
-      className={['h-9 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm focus-ring', className].join(' ')}
+      className={['h-9 w-full rounded-md border border-ink-300 bg-white/90 px-3 text-sm text-ink-800 shadow-sm focus:border-brand-400 focus:bg-white focus-ring', className].join(' ')}
       {...rest}
     >
       {children}
@@ -126,7 +126,7 @@ export function Select({ className = '', children, ...rest }: React.SelectHTMLAt
 export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description?: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center text-center px-6 py-14">
-      {icon && <div className="h-12 w-12 rounded-xl bg-ink-100 flex items-center justify-center text-ink-400 mb-3">{icon}</div>}
+      {icon && <div className="h-12 w-12 rounded-lg bg-ink-100 flex items-center justify-center text-ink-400 mb-3">{icon}</div>}
       <p className="text-sm font-medium text-ink-900">{title}</p>
       {description && <p className="text-xs text-ink-500 mt-1 max-w-sm">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
@@ -135,13 +135,13 @@ export function EmptyState({ icon, title, description, action }: { icon?: ReactN
 }
 
 export function Stat({ label, value, delta, tone = 'green' }: { label: string; value: string; delta?: string; tone?: 'green' | 'red' | 'gray' }) {
-  const toneText = { green: 'text-emerald-600', red: 'text-red-600', gray: 'text-ink-500' }[tone];
+  const toneText = { green: 'text-emerald-700', red: 'text-red-700', gray: 'text-ink-500' }[tone];
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <div className="p-5">
-        <p className="text-xs font-medium text-ink-500 uppercase tracking-wide">{label}</p>
-        <p className="text-2xl font-semibold text-ink-900 mt-2">{value}</p>
-        {delta && <p className={['text-xs font-medium mt-1', toneText].join(' ')}>{delta}</p>}
+        <p className="tech-label text-ink-500">{label}</p>
+        <p className="text-[28px] leading-none font-semibold text-ink-900 mt-3">{value}</p>
+        {delta && <p className={['text-[11px] font-medium mt-2', toneText].join(' ')}>{delta}</p>}
       </div>
     </Card>
   );
