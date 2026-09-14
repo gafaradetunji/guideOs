@@ -322,7 +322,7 @@ function EmploymentStep({
           <option>Abuja</option>
         </Select>
       </Field>
-      <Field label="Annual Salary (USD)" required><Input value={form.annualSalary} onChange={event => onChange('annualSalary', event.target.value)} type="number" placeholder="80000" /></Field>
+      <Field label="Annual Salary (NGN)" required><Input value={form.annualSalary} onChange={event => onChange('annualSalary', event.target.value)} type="number" placeholder="9600000" /></Field>
       <Field label="Probation Period">
         <Select value={form.probationPeriod} onChange={event => onChange('probationPeriod', event.target.value)}>
           <option>3 months</option>

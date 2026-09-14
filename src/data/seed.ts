@@ -1,4 +1,8 @@
 // Mock domain data for GuideOS — realistic enough to drive tables, drawers, wizards, and dashboards.
+// Monetary values are Nigerian naira (NGN); payroll figures derive from the statutory
+// engine in ../lib/tax so seeded runs and live runs agree.
+
+import { computePayroll, VAT_RATE, WHT_RATE } from '../lib/tax';
 
 export type ID = string;
 
@@ -95,15 +99,111 @@ export interface Customer {
 export interface PayrollRun {
   id: ID;
   period: string;
-  status: 'draft' | 'approved' | 'processing' | 'paid' | 'failed';
+  /** First day of the pay month, e.g. 2026-09-01 — used for sorting and duplicate checks. */
+  periodStart: string;
+  status: PayrollRunStatus;
   payDate: string;
   employees: number;
   gross: number;
   deductions: number;
   net: number;
+  paye: number;
+  pension: number;
+  nhf: number;
+  employerCost: number;
   currency: string;
   runBy: string;
   createdAt: string;
+  approvedAt?: string;
+  paidAt?: string;
+  note?: string;
+}
+
+export interface InvoiceLine {
+  id: ID;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  /** Some lines (e.g. disbursements) are not VAT-able. */
+  taxable: boolean;
+}
+
+export type InvoiceStatus = 'draft' | 'sent' | 'part_paid' | 'paid' | 'past_due' | 'cancelled';
+
+export interface InvoicePayment {
+  id: ID;
+  amount: number;
+  date: string;
+  method: 'bank_transfer' | 'card' | 'cash' | 'cheque';
+  reference: string;
+  note?: string;
+}
+
+export interface Invoice {
+  id: ID;
+  number: string;
+  customerId: ID;
+  customerName: string;
+  customerCompany: string;
+  customerEmail: string;
+  contractId?: ID;
+  status: InvoiceStatus;
+  issueDate: string;
+  dueDate: string;
+  /** Payment terms in days, used to derive dueDate. */
+  termsDays: number;
+  currency: string;
+  lines: InvoiceLine[];
+  subtotal: number;
+  vatRate: number;
+  vat: number;
+  /** Withholding tax deducted at source by the customer. */
+  whtRate: number;
+  wht: number;
+  /** subtotal + vat */
+  total: number;
+  /** What the customer actually remits: total - wht */
+  amountDue: number;
+  amountPaid: number;
+  balance: number;
+  payments: InvoicePayment[];
+  notes?: string;
+  createdAt: string;
+  sentAt?: string;
+  paidAt?: string;
+}
+
+export type PayrollRunStatus = 'draft' | 'approved' | 'processing' | 'paid' | 'failed';
+
+export interface Payslip {
+  id: ID;
+  runId: ID;
+  employeeId: ID;
+  employeeName: string;
+  jobTitle: string;
+  level: string;
+  bankName?: string;
+  accountNumber?: string;
+  tin?: string;
+  pensionId?: string;
+  nhfId?: string;
+  annualGross: number;
+  gross: number;
+  paye: number;
+  pension: number;
+  nhf: number;
+  /** Non-statutory adjustments applied during the run. */
+  bonus: number;
+  otherDeductions: number;
+  deductions: number;
+  net: number;
+  employerPension: number;
+  nsitf: number;
+  itf: number;
+  employerCost: number;
+  cra: number;
+  taxableIncome: number;
+  status: 'pending' | 'paid';
 }
 
 export interface Asset {
@@ -295,8 +395,8 @@ export const employees: Employee[] = Array.from({ length: 68 }).map((_, i) => {
     startDate: randomDate(new Date(2019, 0, 1), new Date(2025, 4, 1)),
     location: cities[i % cities.length],
     country: countries[i % countries.length],
-    salary: 40000 + (i * 2371) % 200000,
-    currency: 'USD',
+    salary: 4_800_000 + (i * 431_000) % 33_600_000,
+    currency: 'NGN',
     bankName: ['GTBank','Access Bank','Zenith Bank','First Bank','UBA','Kuda','Stanbic'][i % 7],
     accountNumber: `${1000000000 + i * 12345}`,
     taxId: `TIN-${100000 + i * 17}`,
@@ -322,7 +422,7 @@ employees[0] = {
   managerId: undefined,
   status: 'active',
   level: 'L8',
-  salary: 320000,
+  salary: 42_000_000,
 };
 
 export const leads: Lead[] = Array.from({ length: 32 }).map((_, i) => ({
@@ -334,7 +434,7 @@ export const leads: Lead[] = Array.from({ length: 32 }).map((_, i) => ({
   status: ['new','contacted','qualified','unqualified'][i % 4] as any,
   source: ['Website','Referral','LinkedIn','Cold Email','Trade Show','Webinar'][i % 6],
   owner: `${firstNames[i%firstNames.length]} ${lastNames[i%lastNames.length]}`,
-  value: 5000 + (i * 3137) % 50000,
+  value: 2_500_000 + (i * 1_870_000) % 42_000_000,
   createdAt: randomDate(new Date(2025, 0, 1), new Date(2025, 5, 1)),
   lastActivityAt: randomDate(new Date(2025, 5, 1), new Date(2025, 6, 1)),
 }));
@@ -343,7 +443,7 @@ export const opportunities: Opportunity[] = Array.from({ length: 22 }).map((_, i
   id: `o-${String(i+1).padStart(3,'0')}`,
   name: ['GuideOS Enterprise','Annual Renewal','Expansion - APAC','Platform License','Add-on Seats','Strategic Partnership','Multi-year Deal','Pro Services','Compliance Module','Onboarding Package'][i % 10],
   company: ['Acme Corp','Beta Industries','Gamma Holdings','Delta Tech','Epsilon Labs','Zeta Group','Eta Systems','Theta Capital','Iota Energy','Kappa Health'][i % 10],
-  value: 12000 + (i * 8473) % 180000,
+  value: 8_000_000 + (i * 6_310_000) % 145_000_000,
   stage: ['prospecting','qualification','proposal','negotiation','closed_won','closed_lost'][i % 6] as any,
   probability: [10,25,50,75,100,0][i % 6],
   owner: `${firstNames[(i+5)%firstNames.length]} ${lastNames[(i+3)%lastNames.length]}`,
@@ -358,32 +458,242 @@ export const customers: Customer[] = Array.from({ length: 28 }).map((_, i) => ({
   company: ['Acme Corp','Beta Industries','Gamma Holdings','Delta Tech','Epsilon Labs','Zeta Group','Eta Systems','Theta Capital','Iota Energy','Kappa Health','Lambda Media','Mu Logistics'][i % 12],
   email: `contact${i+1}@${['acme','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa'][i%10]}.com`,
   plan: ['free','starter','growth','enterprise'][i % 4] as any,
-  mrr: [0, 499, 2499, 9900][i % 4],
+  mrr: [0, 450_000, 2_200_000, 8_000_000][i % 4],
   status: i % 9 === 0 ? 'past_due' : (i % 13 === 0 ? 'churned' : 'active'),
   owner: `${firstNames[(i+2)%firstNames.length]} ${lastNames[(i+4)%lastNames.length]}`,
   signupDate: randomDate(new Date(2022, 0, 1), new Date(2025, 4, 1)),
   country: countries[i % countries.length],
 }));
 
-export const payrollRuns: PayrollRun[] = Array.from({ length: 8 }).map((_, i) => {
-  const month = new Date(2025, 11 - i, 1);
-  const period = month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const empCount = 60 + (i % 5) * 2;
-  const gross = empCount * 8421;
+/** Employees who should appear on a payroll run for a given period. */
+export function payrollEligibleEmployees(list: Employee[] = employees) {
+  return list.filter(e => e.status === 'active' || e.status === 'on_leave' || e.status === 'probation');
+}
+
+/** Contractors sit outside PAYE/pension/NHF. */
+export function statutorySchemesApply(e: Employee) {
+  return e.employmentType !== 'contractor';
+}
+
+/** Build a payslip for one employee in one run, from their real salary. */
+export function buildPayslip(
+  runId: ID,
+  e: Employee,
+  opts: { bonus?: number; otherDeductions?: number; status?: Payslip['status'] } = {}
+): Payslip {
+  const { bonus = 0, otherDeductions = 0, status = 'pending' } = opts;
+  const schemes = statutorySchemesApply(e);
+  const c = computePayroll(e.salary, { pensionApplies: schemes, nhfApplies: schemes });
+  const gross = c.monthlyGross + bonus;
+  const deductions = c.monthlyDeductions + otherDeductions;
   return {
-    id: `pr-${String(i+1).padStart(3,'0')}`,
-    period,
-    status: i === 0 ? 'draft' : (i === 1 ? 'approved' : (i === 2 ? 'processing' : 'paid')) as any,
-    payDate: new Date(month.getFullYear(), month.getMonth() + 1, 28).toISOString().slice(0, 10),
-    employees: empCount,
+    id: `ps-${runId}-${e.id}`,
+    runId,
+    employeeId: e.id,
+    employeeName: `${e.firstName} ${e.lastName}`,
+    jobTitle: e.jobTitle,
+    level: e.level,
+    bankName: e.bankName,
+    accountNumber: e.accountNumber,
+    tin: e.tin,
+    pensionId: e.pensionId,
+    nhfId: e.nhfId,
+    annualGross: e.salary,
     gross,
-    deductions: gross * 0.18,
-    net: gross * 0.82,
-    currency: 'USD',
-    runBy: 'Fatima Ibrahim',
-    createdAt: new Date(month.getFullYear(), month.getMonth(), 15).toISOString().slice(0, 10),
+    paye: c.monthlyPaye,
+    pension: c.monthlyPension,
+    nhf: c.monthlyNhf,
+    bonus,
+    otherDeductions,
+    deductions,
+    net: gross - deductions,
+    employerPension: c.monthlyEmployerPension,
+    nsitf: c.monthlyNsitf,
+    itf: c.monthlyItf,
+    employerCost: c.monthlyEmployerCost,
+    cra: c.cra,
+    taxableIncome: c.taxableIncome,
+    status,
   };
+}
+
+/** Roll a set of payslips up into the run-level totals. */
+export function summarisePayslips(slips: Payslip[]) {
+  return slips.reduce(
+    (acc, s) => ({
+      employees: acc.employees + 1,
+      gross: acc.gross + s.gross,
+      deductions: acc.deductions + s.deductions,
+      net: acc.net + s.net,
+      paye: acc.paye + s.paye,
+      pension: acc.pension + s.pension,
+      nhf: acc.nhf + s.nhf,
+      employerCost: acc.employerCost + s.employerCost,
+    }),
+    { employees: 0, gross: 0, deductions: 0, net: 0, paye: 0, pension: 0, nhf: 0, employerCost: 0 }
+  );
+}
+
+// Eight months of history ending with the current period as a draft awaiting review.
+const seededRuns: PayrollRun[] = [];
+const seededPayslips: Payslip[] = [];
+
+Array.from({ length: 8 }).forEach((_, i) => {
+  const month = new Date(2026, 8 - i, 1);
+  const id = `pr-${String(8 - i).padStart(3, '0')}`;
+  const period = month.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' });
+  // Older runs covered fewer people, mirroring headcount growth.
+  const roster = payrollEligibleEmployees().slice(0, Math.max(1, employees.length - i * 2));
+  const status: PayrollRunStatus = i === 0 ? 'draft' : i === 1 ? 'approved' : 'paid';
+  const slips = roster.map(e => buildPayslip(id, e, { status: status === 'paid' ? 'paid' : 'pending' }));
+  const totals = summarisePayslips(slips);
+  const payDate = new Date(month.getFullYear(), month.getMonth(), 28).toISOString().slice(0, 10);
+  const createdAt = new Date(month.getFullYear(), month.getMonth(), 15).toISOString().slice(0, 10);
+  seededPayslips.push(...slips);
+  seededRuns.push({
+    id,
+    period,
+    periodStart: month.toISOString().slice(0, 10),
+    status,
+    payDate,
+    employees: totals.employees,
+    gross: totals.gross,
+    deductions: totals.deductions,
+    net: totals.net,
+    paye: totals.paye,
+    pension: totals.pension,
+    nhf: totals.nhf,
+    employerCost: totals.employerCost,
+    currency: 'NGN',
+    runBy: 'Fatima Ibrahim',
+    createdAt,
+    approvedAt: status === 'draft' ? undefined : createdAt,
+    paidAt: status === 'paid' ? payDate : undefined,
+  });
 });
+
+export const payrollRuns: PayrollRun[] = seededRuns;
+export const payslips: Payslip[] = seededPayslips;
+
+/** Recompute every derived monetary field on an invoice from its lines. */
+export function calcInvoiceTotals(
+  // Accepts draft lines that do not yet carry an id, so the composer can price live.
+  lines: Pick<InvoiceLine, 'quantity' | 'unitPrice' | 'taxable'>[],
+  opts: { vatRate?: number; whtRate?: number; amountPaid?: number } = {}
+) {
+  const { vatRate = VAT_RATE, whtRate = 0, amountPaid = 0 } = opts;
+  const subtotal = lines.reduce((a, l) => a + l.quantity * l.unitPrice, 0);
+  const taxableBase = lines.filter(l => l.taxable).reduce((a, l) => a + l.quantity * l.unitPrice, 0);
+  const vat = taxableBase * vatRate;
+  // WHT is levied on the net-of-VAT value of services and withheld by the customer.
+  const wht = subtotal * whtRate;
+  const total = subtotal + vat;
+  const amountDue = total - wht;
+  return {
+    subtotal,
+    vat,
+    wht,
+    total,
+    amountDue,
+    amountPaid,
+    balance: amountDue - amountPaid,
+  };
+}
+
+/** Derive the status an invoice should hold, given what has been paid and today's date. */
+export function deriveInvoiceStatus(
+  invoice: Pick<Invoice, 'status' | 'dueDate' | 'amountDue' | 'amountPaid'>,
+  today = new Date()
+): InvoiceStatus {
+  if (invoice.status === 'draft' || invoice.status === 'cancelled') return invoice.status;
+  // Tolerate sub-kobo float drift when deciding whether a bill is settled.
+  if (invoice.amountPaid >= invoice.amountDue - 0.01) return 'paid';
+  const overdue = new Date(invoice.dueDate) < today;
+  if (invoice.amountPaid > 0) return overdue ? 'past_due' : 'part_paid';
+  return overdue ? 'past_due' : 'sent';
+}
+
+export function addDays(iso: string, days: number) {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+const invoiceServices = [
+  { description: 'GuideOS platform subscription', taxable: true },
+  { description: 'Implementation & onboarding services', taxable: true },
+  { description: 'Premium support retainer', taxable: true },
+  { description: 'Additional user seats', taxable: true },
+  { description: 'Data migration services', taxable: true },
+  { description: 'Reimbursable travel disbursement', taxable: false },
+];
+
+export const invoices: Invoice[] = customers
+  .filter(c => c.mrr > 0)
+  .map((c, i) => {
+    const issueDate = randomDate(new Date(2026, 2, 1), new Date(2026, 8, 10));
+    const termsDays = [14, 30, 30, 45][i % 4];
+    const dueDate = addDays(issueDate, termsDays);
+    // Enterprise accounts withhold tax at source; smaller plans do not.
+    const whtRate = c.plan === 'enterprise' ? WHT_RATE : 0;
+
+    const primary = invoiceServices[i % invoiceServices.length];
+    const lines: InvoiceLine[] = [
+      { id: `il-${i}-1`, description: primary.description, quantity: 1, unitPrice: c.mrr, taxable: primary.taxable },
+    ];
+    if (i % 3 === 0) {
+      lines.push({ id: `il-${i}-2`, description: 'Additional user seats', quantity: 5 + (i % 20), unitPrice: 35_000, taxable: true });
+    }
+    if (i % 5 === 0) {
+      lines.push({ id: `il-${i}-3`, description: 'Reimbursable travel disbursement', quantity: 1, unitPrice: 120_000 + i * 5_000, taxable: false });
+    }
+
+    const base = calcInvoiceTotals(lines, { whtRate });
+
+    // Spread the book across the lifecycle so every status is represented.
+    const bucket = i % 6;
+    let amountPaid = 0;
+    let status: InvoiceStatus = 'sent';
+    if (c.status === 'churned') { status = 'cancelled'; }
+    else if (bucket === 0) { status = 'draft'; }
+    else if (bucket === 1) { amountPaid = base.amountDue; status = 'paid'; }
+    else if (bucket === 2) { amountPaid = Math.round(base.amountDue * 0.4); status = 'part_paid'; }
+    else if (bucket === 3) { amountPaid = base.amountDue; status = 'paid'; }
+
+    const totals = calcInvoiceTotals(lines, { whtRate, amountPaid });
+    const payments: InvoicePayment[] = amountPaid > 0 ? [{
+      id: `pay-${i}-1`,
+      amount: amountPaid,
+      date: addDays(issueDate, Math.min(termsDays, 7 + (i % 20))),
+      method: (['bank_transfer', 'bank_transfer', 'card', 'cheque'] as const)[i % 4],
+      reference: `TRF-${String(480_000 + i * 137)}`,
+    }] : [];
+
+    const resolved: Invoice = {
+      id: `inv-${String(i + 1).padStart(3, '0')}`,
+      number: `INV-2026-${String(i + 1).padStart(4, '0')}`,
+      customerId: c.id,
+      customerName: c.name,
+      customerCompany: c.company,
+      customerEmail: c.email,
+      status,
+      issueDate,
+      dueDate,
+      termsDays,
+      currency: 'NGN',
+      lines,
+      ...totals,
+      vatRate: VAT_RATE,
+      whtRate,
+      payments,
+      notes: 'Payment by bank transfer to GuideOS Technologies Ltd. Quote the invoice number as reference.',
+      createdAt: issueDate,
+      sentAt: status === 'draft' ? undefined : issueDate,
+      paidAt: status === 'paid' ? addDays(issueDate, Math.min(termsDays, 7 + (i % 20))) : undefined,
+    };
+    // Let the date-aware rule decide between sent / part_paid / past_due.
+    return { ...resolved, status: deriveInvoiceStatus(resolved) };
+  });
 
 export const assets: Asset[] = Array.from({ length: 40 }).map((_, i) => {
   const types: Asset['type'][] = ['laptop','phone','monitor','accessory','software','peripheral'];
@@ -400,7 +710,7 @@ export const assets: Asset[] = Array.from({ length: 40 }).map((_, i) => {
     assigneeId: i % 7 === 0 || i % 9 === 0 || i % 13 === 0 ? undefined : employees[i % employees.length].id,
     assignedAt: i % 7 === 0 ? undefined : randomDate(new Date(2023, 0, 1), new Date(2025, 4, 1)),
     purchaseDate: randomDate(new Date(2021, 0, 1), new Date(2025, 3, 1)),
-    purchaseValue: 200 + (i * 387) % 4500,
+    purchaseValue: 180_000 + (i * 317_000) % 3_600_000,
     location: ['HQ - Lagos','Remote','Abuja Office','London Office'][i % 4],
   };
 });
@@ -513,7 +823,7 @@ export const positions: Position[] = Array.from({ length: 8 }).map((_, i) => ({
   type: ['full_time','full_time','full_time','full_time','full_time','full_time','full_time','contract'][i] as any,
   location: ['Lagos','Remote - Nigeria','Remote - Global','Abuja','London'][i % 5],
   applicants: 8 + (i * 5) % 40,
-  salaryRange: ['$90-120k','$100-130k','$80-110k','$140-180k','$110-140k','$95-125k','$90-115k','$70-90k'][i],
+  salaryRange: ['₦10.8M-14.4M','₦12M-15.6M','₦9.6M-13.2M','₦16.8M-21.6M','₦13.2M-16.8M','₦11.4M-15M','₦10.8M-13.8M','₦8.4M-10.8M'][i],
   hiringManager: `${firstNames[i%firstNames.length]} ${lastNames[(i+3)%lastNames.length]}`,
   openedAt: randomDate(new Date(2025, 0, 1), new Date(2025, 5, 1)),
 }));
@@ -522,8 +832,8 @@ export const expenses: Expense[] = Array.from({ length: 28 }).map((_, i) => ({
   id: `exp-${String(i+1).padStart(3,'0')}`,
   employeeId: employees[i % employees.length].id,
   category: ['Travel','Meals','Software','Office Supplies','Client Entertainment','Hardware','Training','Phone'][i % 8],
-  amount: 25 + (i * 137) % 2800,
-  currency: 'USD',
+  amount: 12_000 + (i * 47_300) % 1_400_000,
+  currency: 'NGN',
   status: ['draft','submitted','approved','rejected','paid'][i % 5] as any,
   date: randomDate(new Date(2025, 4, 1), new Date(2025, 6, 1)),
   vendor: ['Uber','DoorDash','Adobe','Amazon','Stripes Restaurant','Best Buy','Udemy','Verizon'][i % 8],
@@ -538,15 +848,20 @@ export const complianceItems: ComplianceItem[] = Array.from({ length: 20 }).map(
     id: `cm-${String(i+1).padStart(3,'0')}`,
     type: types[i % 5],
     period: months[i % 4],
-    amount: 4000 + (i * 1231) % 23000,
+    amount: 2_400_000 + (i * 1_130_000) % 18_000_000,
     status: i % 4 === 0 ? 'overdue' : (i % 3 === 0 ? 'pending' : (i % 5 === 0 ? 'filed' : 'paid')) as any,
     dueDate: randomDate(new Date(2025, 5, 1), new Date(2025, 8, 1)),
     filedDate: i % 5 === 0 ? randomDate(new Date(2025, 4, 1), new Date(2025, 5, 28)) : undefined,
   };
 });
 
-export function formatCurrency(n: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
+export function formatCurrency(n: number, currency = 'NGN') {
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
+}
+
+// Compact form for dashboard tiles where full naira figures overflow (e.g. ₦14.4M).
+export function formatCurrencyCompact(n: number, currency = 'NGN') {
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }
 
 export function formatDate(iso: string) {

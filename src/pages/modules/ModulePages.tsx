@@ -5,7 +5,7 @@ import { FilterSelect, StatusBadge, ProgressBar, Pagination, Checkbox } from '..
 import { Drawer, Modal } from '../../components/ui/Overlays';
 import {
   tickets, articles, projects, candidates, positions, expenses, complianceItems,
-  employees, departments, payrollRuns, formatCurrency, formatDate, fullName, getEmployee, relativeTime,
+  employees, departments, formatCurrency, formatDate, fullName, getEmployee, relativeTime,
   type Asset, type LeaveRequest,
 } from '../../data/seed';
 import { useMockData } from '../../mock/MockDataProvider';
@@ -732,8 +732,10 @@ export function EmployeeGrowthReportPage({ navigate }: RouteProps) {
 }
 
 export function PayrollCostReportPage({ navigate }: RouteProps) {
+  const { payrollRuns } = useMockData();
   const months = payrollRuns.slice().reverse();
-  const max = Math.max(...months.map(m => m.gross));
+  // Guard the spread: an empty run list would otherwise yield -Infinity.
+  const max = months.length ? Math.max(...months.map(m => m.gross)) : 1;
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Reports', onClick: () => navigate('/reports/payroll') }, { label: 'Payroll Cost' }]} />} title="Payroll Cost" description="Monthly gross, net, and deductions" actions={<Button size="sm" variant="outline" leftIcon={<Download className="h-3.5 w-3.5" />}>Export</Button>} />
@@ -851,7 +853,7 @@ export function SettingsPage({ navigate }: RouteProps) {
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Trading Name</label><Input defaultValue="NerithonX" /></div>
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Tax ID</label><Input defaultValue="NG-12345678-0000" /></div>
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Country</label><Input defaultValue="Nigeria" /></div>
-            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Currency</label><Input defaultValue="USD" /></div>
+            <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Currency</label><Input defaultValue="NGN" /></div>
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Timezone</label><Input defaultValue="Africa/Lagos (WAT)" /></div>
             <div className="md:col-span-2"><label className="block text-xs font-medium text-ink-700 mb-1.5">Registered Address</label><Input defaultValue="10 Adeola Odeku Street, Victoria Island, Lagos, Nigeria" /></div>
           </CardBody>

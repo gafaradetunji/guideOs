@@ -7,7 +7,8 @@ import { EmployeeDetailPage } from './pages/employees/EmployeeDetailPage';
 import { OrgChartPage } from './pages/employees/OrgChartPage';
 import { OnboardingPage, OnboardingChecklistPage } from './pages/onboarding/OnboardingPage';
 import { LeadsPage, OpportunitiesPage, CompaniesPage, ContactsPage, PipelinesPage } from './pages/crm/CrmPages';
-import { PayrollRunsPage, SalaryStructurePage, PayslipsPage, CustomerListPage, ContractsPage, InvoicesPage } from './pages/payroll/PayrollPages';
+import { PayrollRunsPage, PayrollRunDetailPage, SalaryStructurePage, PayslipsPage, CustomerListPage, ContractsPage } from './pages/payroll/PayrollPages';
+import { InvoicesPage, InvoiceDetailPage } from './pages/invoices/InvoicePages';
 import {
   LeaveRequestsPage, LeaveCalendarPage, AssetsPage, AssetsAssignedPage,
   TicketsPage, EscalationsPage, KnowledgeBasePage, ProjectsPage,
@@ -53,6 +54,7 @@ function renderRoute(path: string, navigate: (to: string) => void) {
   if (path === '/customers') return <CustomerListPage {...props} />;
   if (path === '/customers/contracts') return <ContractsPage {...props} />;
   if (path === '/customers/invoices') return <InvoicesPage {...props} />;
+  if (path.startsWith('/customers/invoices/')) return <InvoiceDetailPage {...props} />;
 
   // Employees
   if (path === '/employees') return <EmployeeDirectoryPage {...props} />;
@@ -70,6 +72,7 @@ function renderRoute(path: string, navigate: (to: string) => void) {
 
   // Payroll
   if (path === '/payroll') return <PayrollRunsPage {...props} />;
+  if (path.startsWith('/payroll/runs/')) return <PayrollRunDetailPage {...props} />;
   if (path === '/payroll/structure') return <SalaryStructurePage {...props} />;
   if (path === '/payroll/payslips') return <PayslipsPage {...props} />;
 

@@ -3,23 +3,27 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader, CardBody, Stat, Avatar, PageHeader, Badge, Button } from '../../components/ui';
 import { StatusBadge, ProgressBar } from '../../components/ui/Filters';
-import { activities, payrollRuns, tickets, opportunities, formatCurrency, relativeTime } from '../../data/seed';
+import { activities, tickets, opportunities, formatCurrency, relativeTime } from '../../data/seed';
 import { useMockData } from '../../mock/MockDataProvider';
 import type { RouteProps } from '../../lib/types';
 
 export function DashboardPage({ navigate }: RouteProps) {
-  const { employees, leaveRequests } = useMockData();
+  const { employees, leaveRequests, payrollRuns, invoices } = useMockData();
   const totalHeadcount = employees.filter(e => e.status !== 'inactive').length;
   const activeTickets = tickets.filter(t => t.status === 'open' || t.status === 'pending').length;
   const urgentTickets = tickets.filter(t => t.priority === 'urgent').length;
   const openPipeline = opportunities
     .filter(o => o.stage !== 'closed_won' && o.stage !== 'closed_lost')
     .reduce((a, o) => a + o.value, 0);
-  const lastRun = payrollRuns[0];
+  const lastRun = payrollRuns[0] as typeof payrollRuns[0] | undefined;
+  const receivables = invoices
+    .filter(i => i.status !== 'cancelled' && i.status !== 'draft')
+    .reduce((a, i) => a + i.balance, 0);
   const pendingApprovals = [
     { label: 'Leave requests', count: leaveRequests.filter(request => request.status === 'pending').length, path: '/leave' },
     { label: 'Expense claims', count: 8, path: '/finance/expenses' },
-    { label: 'Payroll review', count: 1, path: '/payroll' },
+    { label: 'Payroll review', count: payrollRuns.filter(r => r.status === 'draft').length, path: '/payroll' },
+    { label: 'Overdue invoices', count: invoices.filter(i => i.status === 'past_due').length, path: '/customers/invoices' },
     { label: 'Role changes', count: 2, path: '/settings/roles' },
   ];
   const servicePosture = [
@@ -29,7 +33,7 @@ export function DashboardPage({ navigate }: RouteProps) {
   ];
   const modules = [
     { name: 'HR Directory', status: 'active', detail: `${totalHeadcount} active identities`, progress: 96 },
-    { name: 'Payroll Engine', status: lastRun.status, detail: `Next pay date ${lastRun.payDate}`, progress: 82 },
+    { name: 'Payroll Engine', status: lastRun?.status ?? 'draft', detail: lastRun ? `Next pay date ${lastRun.payDate}` : 'No runs yet', progress: 82 },
     { name: 'CRM Pipeline', status: 'qualified', detail: `${formatCurrency(openPipeline)} open value`, progress: 68 },
     { name: 'Support Desk', status: urgentTickets > 0 ? 'at_risk' : 'met', detail: `${activeTickets} active tickets`, progress: urgentTickets > 0 ? 41 : 88 },
   ];
@@ -105,9 +109,9 @@ export function DashboardPage({ navigate }: RouteProps) {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat label="Directory Objects" value={String(totalHeadcount)} delta="3 identities added this month" tone="green" />
-          <Stat label="Revenue Pipeline" value={formatCurrency(openPipeline)} delta="$28k updated in last 24h" tone="green" />
+          <Stat label="Revenue Pipeline" value={formatCurrency(openPipeline)} delta={`${formatCurrency(receivables)} in receivables`} tone="green" />
           <Stat label="Support Backlog" value={String(activeTickets)} delta={`${urgentTickets} urgent cases`} tone="red" />
-          <Stat label="Payroll Release" value={formatCurrency(lastRun.net)} delta={`Window ${lastRun.payDate}`} tone="gray" />
+          <Stat label="Payroll Release" value={lastRun ? formatCurrency(lastRun.net) : '—'} delta={lastRun ? `Window ${lastRun.payDate}` : 'No runs yet'} tone="gray" />
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-4">
