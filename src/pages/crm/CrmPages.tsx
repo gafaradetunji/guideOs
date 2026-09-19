@@ -65,7 +65,7 @@ function LeadDrawer({ lead, onClose }: { lead: typeof leads[0] | null; onClose: 
   return (
     <Drawer open={!!lead} onClose={onClose} title={lead?.name} description={lead?.company} footer={<><Button variant="ghost" size="sm" onClick={onClose}>Close</Button><Button size="sm">Convert to Contact</Button></>}>
       {lead && (
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <div className="flex items-center gap-3 pb-4 border-b border-ink-100">
             <Avatar name={lead.name} size={48} />
             <div>
@@ -175,7 +175,7 @@ export function CompaniesPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'CRM', onClick: () => navigate('/crm/companies') }, { label: 'Companies' }]} />} title="Companies" description={`${companies.length} companies`} actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>Add Company</Button>} />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {companies.map((name, i) => {
           const deals = opportunities.filter(o => o.company === name);
           const value = deals.reduce((a, o) => a + o.value, 0);
@@ -208,7 +208,7 @@ export function ContactsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'CRM', onClick: () => navigate('/crm/contacts') }, { label: 'Contacts' }]} />} title="Contacts" description={`${leads.length} contacts in your address book`} actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>Add Contact</Button>} />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {leads.map(c => (
           <Card key={c.id} className="hover:shadow-cardlg">
             <div className="p-4 flex items-center gap-3">
@@ -231,7 +231,7 @@ export function PipelinesPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'CRM', onClick: () => navigate('/crm/pipelines') }, { label: 'Pipelines' }]} />} title="Pipelines" description="Configure your sales pipeline stages" actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>New Pipeline</Button>} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <Card>
           <CardHeader title="Default Sales Pipeline" subtitle="6 stages • 22 active deals" action={<Button variant="ghost" size="sm">Edit Stages</Button>} />
           <CardBody className="p-0">

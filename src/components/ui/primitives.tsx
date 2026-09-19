@@ -10,7 +10,7 @@ export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLD
 
 export function CardHeader({ title, subtitle, action }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 px-5 py-3.5 border-b border-ink-200/80">
+    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 sm:px-5 py-3.5 border-b border-ink-200/80">
       <div className="min-w-0">
         <h3 className="text-[13px] font-semibold tracking-[0.01em] text-ink-900">{title}</h3>
         {subtitle && <p className="text-[11px] text-ink-500 mt-1">{subtitle}</p>}
@@ -21,7 +21,7 @@ export function CardHeader({ title, subtitle, action }: { title: ReactNode; subt
 }
 
 export function CardBody({ className = '', children }: { className?: string; children: ReactNode }) {
-  return <div className={['p-5', className].join(' ')}>{children}</div>;
+  return <div className={['p-4 sm:p-5', className].join(' ')}>{children}</div>;
 }
 
 type Tone = 'gray' | 'green' | 'red' | 'amber' | 'blue' | 'purple' | 'ink';
@@ -47,8 +47,8 @@ export function Badge({ tone = 'gray', children, className = '', dot = false }: 
 
 export function Table({ children, containerClassName = '' }: { children: ReactNode; containerClassName?: string }) {
   return (
-    <div className={['overflow-x-auto scrollbar-thin', containerClassName].join(' ')}>
-      <table className="w-full text-sm">{children}</table>
+    <div className={['w-full max-w-full overflow-x-auto scrollbar-thin', containerClassName].join(' ')}>
+      <table className="w-full min-w-[640px] text-sm">{children}</table>
     </div>
   );
 }
@@ -70,8 +70,10 @@ export function TBody({ children }: { children: ReactNode }) {
 }
 
 export function Td({ children, className = '', ...rest }: TdHTMLAttributes<HTMLTableCellElement> & { children?: ReactNode }) {
+  // Cells stay on one line so the horizontal scroll (rather than tall wrapped rows)
+  // is what absorbs narrow viewports. Opt out per-cell with `whitespace-normal`.
   return (
-    <td className={['px-4 py-3 text-ink-700 align-middle', className].join(' ')} {...rest}>
+    <td className={['px-4 py-3 text-ink-700 align-middle whitespace-nowrap', className].join(' ')} {...rest}>
       {children}
     </td>
   );
@@ -125,7 +127,7 @@ export function Select({ className = '', children, ...rest }: React.SelectHTMLAt
 
 export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-6 py-14">
+    <div className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-10 sm:py-14">
       {icon && <div className="h-12 w-12 rounded-lg bg-ink-100 flex items-center justify-center text-ink-400 mb-3">{icon}</div>}
       <p className="text-sm font-medium text-ink-900">{title}</p>
       {description && <p className="text-xs text-ink-500 mt-1 max-w-sm">{description}</p>}
@@ -138,9 +140,9 @@ export function Stat({ label, value, delta, tone = 'green' }: { label: string; v
   const toneText = { green: 'text-emerald-700', red: 'text-red-700', gray: 'text-ink-500' }[tone];
   return (
     <Card className="overflow-hidden">
-      <div className="p-5">
-        <p className="tech-label text-ink-500">{label}</p>
-        <p className="text-[28px] leading-none font-semibold text-ink-900 mt-3">{value}</p>
+      <div className="p-4 sm:p-5">
+        <p className="tech-label text-ink-500 truncate">{label}</p>
+        <p className="text-xl sm:text-2xl lg:text-[28px] leading-none font-semibold text-ink-900 mt-2 sm:mt-3 break-words">{value}</p>
         {delta && <p className={['text-[11px] font-medium mt-2', toneText].join(' ')}>{delta}</p>}
       </div>
     </Card>

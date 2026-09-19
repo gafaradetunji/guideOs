@@ -14,7 +14,7 @@ export function OrgChartPage({ navigate }: RouteProps) {
         title="Organization Chart"
         description="Reporting structure across GuideOS"
       />
-      <div className="p-6 overflow-x-auto scrollbar-thin">
+      <div className="p-4 sm:p-6 overflow-x-auto scrollbar-thin">
         <div className="min-w-[900px]">
           {/* CEO */}
           <div className="flex flex-col items-center">
@@ -24,7 +24,7 @@ export function OrgChartPage({ navigate }: RouteProps) {
           </div>
 
           {/* Level 2 - direct reports */}
-          <div className="grid gap-6 grid-cols-4 mt-0">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mt-0">
             {directReports.map((e, i) => {
               const dept = departments.find(d => d.id === e.departmentId);
               const reports = employees.filter(x => x.managerId === e.id).slice(0, 4);

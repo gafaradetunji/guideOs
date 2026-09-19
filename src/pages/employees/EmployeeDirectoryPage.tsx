@@ -166,7 +166,7 @@ export function DepartmentsPage({ navigate }: RouteProps) {
         description={`${departments.length} departments across the organization`}
         actions={<Button size="sm" variant="outline" leftIcon={<UserPlus className="h-3.5 w-3.5" />}>New Department</Button>}
       />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {departments.map(d => {
           const lead = employees.find(e => e.id === d.leadId);
           const teamCount = teamsFor(d.id).length;

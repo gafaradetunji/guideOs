@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from './lib/router';
 import { Sidebar, Header } from './components/shell/Sidebar';
 import { DashboardPage, ActivityFeedPage, NotificationsPage } from './pages/dashboard/DashboardPage';
@@ -21,15 +21,51 @@ import {
 function App() {
   const { path, navigate } = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close the mobile drawer whenever navigation happens.
+  useEffect(() => { setMobileNavOpen(false); }, [path]);
+
+  // Lock body scroll behind the open drawer.
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileNavOpen]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileNavOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileNavOpen]);
 
   const page = renderRoute(path, navigate);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-50 console-grid">
-      <Sidebar path={path} onNavigate={navigate} collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
+    <div className="flex h-[100dvh] overflow-hidden bg-ink-50 console-grid">
+      {/* Off-canvas backdrop (mobile / tablet only) */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-ink-900/50 animate-fade-in lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <Sidebar
+        path={path}
+        onNavigate={navigate}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed(!collapsed)}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
+      />
+
       <div className="flex-1 flex flex-col min-w-0">
-        <Header path={path} onNavigate={navigate} />
-        <main className="flex-1 overflow-y-auto scrollbar-thin">{page}</main>
+        <Header path={path} onNavigate={navigate} onOpenMobileNav={() => setMobileNavOpen(true)} />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">{page}</main>
       </div>
     </div>
   );
@@ -124,10 +160,10 @@ function renderRoute(path: string, navigate: (to: string) => void) {
 
 function NotFound({ path, navigate }: { path: string; navigate: (to: string) => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-6">
-      <p className="text-6xl font-bold text-ink-200">404</p>
+    <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-6">
+      <p className="text-5xl sm:text-6xl font-bold text-ink-200">404</p>
       <p className="text-sm font-medium text-ink-900 mt-2">Page not found</p>
-      <p className="text-xs text-ink-500 mt-1">The route <code className="font-mono">{path}</code> doesn't exist.</p>
+      <p className="text-xs text-ink-500 mt-1">The route <code className="font-mono break-all">{path}</code> doesn't exist.</p>
       <button onClick={() => navigate('/')} className="mt-4 text-sm font-medium text-brand-600 hover:text-brand-700">Back to Dashboard</button>
     </div>
   );

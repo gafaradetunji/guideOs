@@ -42,7 +42,7 @@ export function PayrollRunsPage({ navigate }: RouteProps) {
         description="Create, approve and disburse monthly payroll with statutory PAYE, pension and NHF."
         actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setWizardOpen(true)}>New Run</Button>}
       />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat label="Gross Paid (YTD)" value={formatCurrency(ytdGross)} delta={`${paidRuns.length} completed runs`} tone="gray" />
           <Stat label="Net Disbursed (YTD)" value={formatCurrency(ytdNet)} tone="green" />
@@ -198,7 +198,7 @@ function PayrollWizard({ open, onClose, navigate }: { open: boolean; onClose: ()
         </>
       }
     >
-      <div className="px-6 pt-5">
+      <div className="px-4 sm:px-6 pt-5">
         <div className="flex items-center gap-1">
           {wizardSteps.map((s, i) => {
             const done = s.id < step;
@@ -222,10 +222,10 @@ function PayrollWizard({ open, onClose, navigate }: { open: boolean; onClose: ()
         </div>
       </div>
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         {step === 1 && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Pay Period">
                 <Input type="month" value={period} onChange={e => setPeriod(e.target.value)} />
               </Field>
@@ -392,7 +392,7 @@ export function PayrollRunDetailPage({ path, navigate }: RouteProps) {
 
   if (!run) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <EmptyState icon={<Wallet className="h-5 w-5" />} title="Payroll run not found"
           action={<Button size="sm" onClick={() => navigate('/payroll')}>Back to Payroll Runs</Button>} />
       </div>
@@ -423,7 +423,7 @@ export function PayrollRunDetailPage({ path, navigate }: RouteProps) {
         }
       />
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <RunProgress status={run.status} />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -536,8 +536,8 @@ function PayslipDrawer({ slip, onClose, period, payDate }: { slip: Payslip | nul
       description={`${period} • pay date ${formatDate(payDate)}`}
       footer={<><Button variant="ghost" size="sm" onClick={onClose}>Close</Button><Button size="sm" leftIcon={<Download className="h-3.5 w-3.5" />} onClick={() => window.print()}>Download PDF</Button></>}
     >
-      <div className="p-6 space-y-5">
-        <div className="grid grid-cols-3 gap-3">
+      <div className="p-4 sm:p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MiniStat label="Gross" value={formatCurrency(slip.gross)} />
           <MiniStat label="Deductions" value={formatCurrency(slip.deductions)} tone="red" />
           <MiniStat label="Net Pay" value={formatCurrency(slip.net)} tone="green" />
@@ -545,7 +545,7 @@ function PayslipDrawer({ slip, onClose, period, payDate }: { slip: Payslip | nul
 
         <Card>
           <CardHeader title="Employee" />
-          <CardBody className="grid grid-cols-2 gap-y-2 text-xs">
+          <CardBody className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs">
             <DetailRow label="Job Title" value={slip.jobTitle} />
             <DetailRow label="Level" value={slip.level} />
             <DetailRow label="Bank" value={slip.bankName || '—'} />
@@ -640,7 +640,7 @@ export function PayslipsPage({ navigate }: RouteProps) {
 
   if (!run) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <EmptyState icon={<FileText className="h-5 w-5" />} title="No payslips yet"
           description="Create a payroll run to generate payslips."
           action={<Button size="sm" onClick={() => navigate('/payroll')}>Go to Payroll Runs</Button>} />
@@ -727,7 +727,7 @@ export function SalaryStructurePage({ navigate }: RouteProps) {
         title="Salary Structure"
         description="Live salary bands derived from the employee directory."
       />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <Card>
           <CardHeader title="Salary Bands" subtitle="Min, max and average annual gross by level" />
           <CardBody className="p-0">

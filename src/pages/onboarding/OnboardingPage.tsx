@@ -121,7 +121,7 @@ export function OnboardingPage({ navigate }: RouteProps) {
         actions={<Button variant="outline" size="sm" onClick={() => navigate('/onboarding')}>View Open Checklists</Button>}
       />
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Card className="mb-4">
           <CardBody>
             <div className="flex items-center justify-between">
@@ -577,7 +577,7 @@ function ReviewSection({
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-700">{title}</p>
         <Button variant="ghost" size="xs" onClick={onEdit}>Edit</Button>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2 px-4 py-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 px-4 py-3">
         {rows.map(([key, value]) => (
           <div key={key}>
             <p className="text-[11px] text-ink-500">{key}</p>
@@ -619,7 +619,7 @@ export function OnboardingChecklistPage({ navigate }: RouteProps) {
         description={`${inProgress.length} employees currently onboarding`}
         actions={<Button size="sm" leftIcon={<Sparkles className="h-3.5 w-3.5" />} onClick={() => navigate('/onboarding/wizard')}>Start New Onboarding</Button>}
       />
-      <div className="p-6 space-y-3">
+      <div className="p-4 sm:p-6 space-y-3">
         {inProgress.map(employee => {
           const stepIndex = Math.floor((employee.onboardingProgress || 0) / 11);
           const nextStep = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];

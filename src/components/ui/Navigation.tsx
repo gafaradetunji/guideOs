@@ -33,7 +33,7 @@ export function Tabs({ items, active, onChange, className = '' }: { items: TabIt
 
 export function Breadcrumbs({ items }: { items: { label: string; onClick?: () => void; icon?: ReactNode }[] }) {
   return (
-    <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.08em] text-ink-500">
+    <nav className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.08em] text-ink-500 whitespace-nowrap">
       {items.map((it, i) => {
         const last = i === items.length - 1;
         return (
@@ -55,14 +55,14 @@ export function Breadcrumbs({ items }: { items: { label: string; onClick?: () =>
 
 export function PageHeader({ title, description, actions, breadcrumbs }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; breadcrumbs?: ReactNode }) {
   return (
-    <div className="panel-sheen px-6 pt-5 pb-4 border-b border-ink-200/80 bg-white/80">
-      {breadcrumbs && <div className="mb-2">{breadcrumbs}</div>}
-      <div className="flex items-start justify-between gap-4">
+    <div className="panel-sheen px-4 sm:px-6 pt-4 sm:pt-5 pb-4 border-b border-ink-200/80 bg-white/80">
+      {breadcrumbs && <div className="mb-2 overflow-x-auto scrollbar-thin">{breadcrumbs}</div>}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4">
         <div className="min-w-0">
-          <h1 className="text-[22px] font-semibold text-ink-900 tracking-[-0.02em]">{title}</h1>
-          {description && <p className="text-sm text-ink-500 mt-1.5 max-w-3xl">{description}</p>}
+          <h1 className="text-lg sm:text-xl lg:text-[22px] font-semibold text-ink-900 tracking-[-0.02em]">{title}</h1>
+          {description && <p className="text-xs sm:text-sm text-ink-500 mt-1.5 max-w-3xl">{description}</p>}
         </div>
-        {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2 md:flex-shrink-0">{actions}</div>}
       </div>
     </div>
   );
@@ -70,7 +70,7 @@ export function PageHeader({ title, description, actions, breadcrumbs }: { title
 
 export function Toolbar({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={['flex flex-wrap items-center gap-2 px-5 py-3 border-b border-ink-200 bg-white/80 backdrop-blur-sm', className].join(' ')}>
+    <div className={['flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 border-b border-ink-200 bg-white/80 backdrop-blur-sm', className].join(' ')}>
       {children}
     </div>
   );

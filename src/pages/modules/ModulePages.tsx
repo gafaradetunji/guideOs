@@ -81,9 +81,9 @@ export function LeaveRequestsPage({ navigate }: RouteProps) {
         {drawerLeave && (() => {
           const emp = storedEmployees.find(employee => employee.id === drawerLeave.employeeId);
           return (
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="flex items-center gap-3"><Avatar name={emp ? fullName(emp) : 'Unknown'} size={48} /><div><p className="text-base font-semibold text-ink-900">{emp ? fullName(emp) : 'Unknown'}</p><p className="text-[11px] text-ink-500">{emp?.jobTitle}</p></div></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Detail label="Type" value={<span className="capitalize">{drawerLeave.type}</span>} />
                 <Detail label="Days" value={String(drawerLeave.days)} />
                 <Detail label="Start" value={formatDate(drawerLeave.startDate)} />
@@ -111,9 +111,11 @@ export function LeaveCalendarPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Leave Management', onClick: () => navigate('/leave') }, { label: 'Calendar' }]} />} title="Leave Calendar" description="June 2025" actions={<div className="flex items-center gap-1"><Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4 rotate-180" /></Button><Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4" /></Button></div>} />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Card>
           <CardBody>
+            <div className="overflow-x-auto scrollbar-thin">
+              <div className="min-w-[560px]">
             <div className="grid grid-cols-7 mb-2">
               {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <div key={d} className="text-center text-[11px] font-semibold uppercase text-ink-500 py-2">{d}</div>)}
             </div>
@@ -123,7 +125,7 @@ export function LeaveCalendarPage({ navigate }: RouteProps) {
                 const dayLeaves = storedLeaveRequests.filter(l => new Date(l.startDate) <= d && new Date(l.endDate) >= d).slice(0, 2);
                 const isCurrentMonth = d.getMonth() === 5;
                 return (
-                  <div key={i} className={['min-h-[80px] p-1.5 rounded-lg border', isToday ? 'bg-brand-50 border-brand-200' : 'border-ink-100', !isCurrentMonth && 'opacity-40'].join(' ')}>
+                  <div key={i} className={['min-h-[72px] sm:min-h-[80px] p-1.5 rounded-lg border', isToday ? 'bg-brand-50 border-brand-200' : 'border-ink-100', !isCurrentMonth && 'opacity-40'].join(' ')}>
                     <p className="text-[11px] text-ink-500 mb-1">{d.getDate()}</p>
                     {dayLeaves.map(l => {
                       const emp = storedEmployees.find(employee => employee.id === l.employeeId);
@@ -132,6 +134,8 @@ export function LeaveCalendarPage({ navigate }: RouteProps) {
                   </div>
                 );
               })}
+            </div>
+              </div>
             </div>
           </CardBody>
         </Card>
@@ -209,9 +213,9 @@ export function AssetsPage({ navigate }: RouteProps) {
 
       <Drawer open={!!assignAsset} onClose={() => setAssignAsset(null)} title={assignAsset?.name} description={assignAsset ? `${assignAsset.brand} ${assignAsset.model} • ${assignAsset.serial}` : ''} footer={<><Button variant="ghost" size="sm" onClick={() => setAssignAsset(null)}>Close</Button><Button size="sm" disabled={!assignAsset || !assetAssigneeId} onClick={() => { if (!assignAsset || !assetAssigneeId) return; assignAssetToEmployee(assignAsset.id, assetAssigneeId); setAssignAsset(null); }}>Assign to Employee</Button></>}>
         {assignAsset && (
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             <div className="flex items-center gap-3"><span className="h-12 w-12 rounded-lg bg-ink-100 text-ink-600 flex items-center justify-center">{assetIcon(assignAsset.type)}</span><div><StatusBadge status={assignAsset.status} /></div></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Detail label="Purchase Date" value={formatDate(assignAsset.purchaseDate)} />
               <Detail label="Purchase Value" value={formatCurrency(assignAsset.purchaseValue)} />
               <Detail label="Location" value={assignAsset.location} />
@@ -232,7 +236,7 @@ export function AssetsPage({ navigate }: RouteProps) {
       <Modal open={showAddAsset} onClose={() => setShowAddAsset(false)} title="Add New Asset" description="Register a new asset to your inventory" footer={<><Button variant="ghost" size="sm" onClick={() => setShowAddAsset(false)}>Cancel</Button><Button size="sm" onClick={() => { createAsset({ name: newAsset.name, type: newAsset.type, brand: newAsset.brand, model: newAsset.model, serial: newAsset.serial, purchaseValue: Number(newAsset.purchaseValue) || 0, location: newAsset.location }); setNewAsset({ name: '', type: 'laptop', brand: '', model: '', serial: '', purchaseValue: '', location: '' }); setShowAddAsset(false); }}>Create Asset</Button></>}>
         <div className="space-y-3">
           <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Asset Name *</label><Input value={newAsset.name} onChange={event => setNewAsset(current => ({ ...current, name: event.target.value }))} placeholder="MacBook Pro 14&quot;" /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Type *</label><select value={newAsset.type} onChange={event => setNewAsset(current => ({ ...current, type: event.target.value as AssetRow['type'] }))} className="h-9 w-full rounded-lg border border-ink-200 px-3 text-sm"><option value="laptop">Laptop</option><option value="phone">Phone</option><option value="monitor">Monitor</option><option value="accessory">Accessory</option><option value="software">Software</option><option value="peripheral">Peripheral</option></select></div>
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Brand *</label><Input value={newAsset.brand} onChange={event => setNewAsset(current => ({ ...current, brand: event.target.value }))} placeholder="Apple" /></div>
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Model</label><Input value={newAsset.model} onChange={event => setNewAsset(current => ({ ...current, model: event.target.value }))} placeholder="M3 2024" /></div>
@@ -370,7 +374,7 @@ export function KnowledgeBasePage({ navigate }: RouteProps) {
         </div>
         <FilterSelect label="Category" value={catFilter} onChange={setCatFilter} options={['payroll','hr','crm','finance','it','policies'].map(c => ({value:c,label:c.toUpperCase()}))} />
       </div>
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(a => (
           <Card key={a.id} className="hover:shadow-cardlg cursor-pointer">
             <div className="p-4">
@@ -492,7 +496,7 @@ export function PositionsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Recruitment', onClick: () => navigate('/recruitment/candidates') }, { label: 'Positions' }]} />} title="Job Positions" description={`${positions.length} open positions`} actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>New Position</Button>} />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {positions.map(p => {
           const dept = getDepartment(p.departmentId);
           return (
@@ -561,7 +565,7 @@ export function BudgetsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Finance', onClick: () => navigate('/finance/expenses') }, { label: 'Budgets' }]} />} title="Department Budgets" description="FY25 allocation vs spend" actions={<Button size="sm" variant="outline">Edit Budget</Button>} />
-      <div className="p-6 space-y-3">
+      <div className="p-4 sm:p-6 space-y-3">
         {budgets.map(b => {
           const pct = (b.spent / b.allocated) * 100;
           return (
@@ -596,7 +600,7 @@ export function CompliancePage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Compliance' }]} />} title="Compliance Dashboard" description="PAYE, Pension, NHF, NSITF, ITF — Nigerian statutory compliance" />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {byType.map(b => (
             <Card key={b.type}>
@@ -639,7 +643,7 @@ export function AttendancePage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Attendance' }]} />} title="Clock In / Out" description={`Today is ${formatDate(today)}`} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <Card>
           <CardBody className="text-center py-10">
             <Clock time="09:14:32" />
@@ -711,7 +715,7 @@ export function EmployeeGrowthReportPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Reports', onClick: () => navigate('/reports/growth') }, { label: 'Employee Growth' }]} />} title="Employee Growth" description="Headcount over the last 10 months" actions={<Button size="sm" variant="outline" leftIcon={<Download className="h-3.5 w-3.5" />}>Export</Button>} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <Card>
           <CardHeader title="Headcount Trend" subtitle="Total active employees per month" />
           <CardBody>
@@ -739,7 +743,7 @@ export function PayrollCostReportPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Reports', onClick: () => navigate('/reports/payroll') }, { label: 'Payroll Cost' }]} />} title="Payroll Cost" description="Monthly gross, net, and deductions" actions={<Button size="sm" variant="outline" leftIcon={<Download className="h-3.5 w-3.5" />}>Export</Button>} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <Card>
           <CardHeader title="Monthly Payroll Cost" />
           <CardBody>
@@ -777,7 +781,7 @@ export function WorkflowsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Workflow Automation' }]} />} title="Workflow Automation" description="Visual builder for automations" actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>New Workflow</Button>} />
-      <div className="p-6 space-y-3">
+      <div className="p-4 sm:p-6 space-y-3">
         {workflows.map(w => (
           <Card key={w.id} className="hover:shadow-cardlg">
             <CardBody>
@@ -823,7 +827,7 @@ export function IntegrationsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Integrations' }]} />} title="Integrations" description="Connect GuideOS with your favorite tools" />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {integrations.map(i => (
           <Card key={i.name} className="hover:shadow-cardlg">
             <CardBody className="flex items-start gap-3">
@@ -846,7 +850,7 @@ export function SettingsPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Settings' }]} />} title="Company Settings" description="NerithonX Technologies (Pvt.) Ltd" />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Card>
           <CardBody className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label className="block text-xs font-medium text-ink-700 mb-1.5">Company Legal Name</label><Input defaultValue="NerithonX Technologies (Pvt.) Ltd" /></div>
@@ -875,7 +879,7 @@ export function RolesPage({ navigate }: RouteProps) {
   return (
     <div>
       <PageHeader breadcrumbs={<Breadcrumbs items={[{ label: 'Settings', onClick: () => navigate('/settings') }, { label: 'Roles & Permissions' }]} />} title="Roles & Permissions" description="5 system roles" actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>New Role</Button>} />
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         {roles.map(r => (
           <Card key={r.name} className="hover:shadow-cardlg">
             <CardBody>

@@ -65,11 +65,11 @@ export function EmployeeDetailPage({ path, navigate }: RouteProps) {
       />
 
       {/* Tabs */}
-      <div className="px-6 bg-white border-b border-ink-200 sticky top-0 z-10">
+      <div className="px-4 sm:px-6 bg-white border-b border-ink-200 sticky top-0 z-10">
         <Tabs items={tabs} active={tab} onChange={setTab} />
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {tab === 'overview' && <OverviewTab employee={employee} dept={dept} manager={manager} navigate={navigate} />}
         {tab === 'personal' && <PersonalTab employee={employee} />}
         {tab === 'employment' && <EmploymentTab employee={employee} dept={dept} />}
@@ -85,7 +85,7 @@ export function EmployeeDetailPage({ path, navigate }: RouteProps) {
       </div>
 
       <Drawer open={leaveDrawerOpen} onClose={() => setLeaveDrawerOpen(false)} title={`Message ${employee.firstName}`} description="Send a direct message via GuideOS">
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <textarea placeholder={`Write a message to ${employee.firstName}...`} className="w-full h-32 rounded-lg border border-ink-200 p-3 text-sm focus-ring resize-none" />
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={() => setLeaveDrawerOpen(false)}>Cancel</Button>
@@ -142,7 +142,7 @@ function OverviewTab({ employee, dept, manager, navigate }: { employee: Employee
       </div>
 
       <div className="lg:col-span-2 space-y-4">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MiniStat label="Annual Salary" value={formatCurrency(employee.salary)} />
           <MiniStat label="Assigned Assets" value={String(empAssets.length)} />
           <MiniStat label="Leave taken" value="6 days" />
@@ -500,7 +500,7 @@ function PermissionsTab() {
         <CardBody className="p-0">
           <div className="divide-y divide-ink-100">
             {permissions.map(p => (
-              <div key={p.module} className="px-5 py-3">
+              <div key={p.module} className="px-4 sm:px-5 py-3">
                 <p className="text-sm font-medium text-ink-900 mb-2">{p.module}</p>
                 <div className="flex flex-wrap gap-2">
                   {p.actions.map((a, i) => (
@@ -536,7 +536,7 @@ function PerformanceTab() {
         <CardBody className="p-0">
           <div className="divide-y divide-ink-100">
             {reviews.map(r => (
-              <div key={r.cycle} className="px-5 py-3">
+              <div key={r.cycle} className="px-4 sm:px-5 py-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-ink-900">{r.cycle}</p>
@@ -557,7 +557,7 @@ function PerformanceTab() {
         <CardBody className="p-0">
           <div className="divide-y divide-ink-100">
             {goals.map(g => (
-              <div key={g.title} className="px-5 py-3">
+              <div key={g.title} className="px-4 sm:px-5 py-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium text-ink-900">{g.title}</p>
                   <StatusBadge status={g.progress === 100 ? 'done' : 'in_progress'} />

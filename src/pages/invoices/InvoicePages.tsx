@@ -68,7 +68,7 @@ export function InvoicesPage({ navigate }: RouteProps) {
         description="Raise, issue and settle customer invoices with VAT and withholding tax."
         actions={<Button size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={openNew}>New Invoice</Button>}
       />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat label="Outstanding" value={formatCurrency(outstanding)} delta={`${live.filter(i => i.balance > 0).length} open invoices`} tone="gray" />
           <Stat label="Collected" value={formatCurrency(collected)} tone="green" />
@@ -217,8 +217,8 @@ function InvoiceComposer({ open, invoice, onClose, onSave }: {
         </>
       }
     >
-      <div className="p-6 space-y-5">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="p-4 sm:p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Customer">
             <Select value={customerId} onChange={e => setCustomerId(e.target.value)}>
               {customers.map(c => <option key={c.id} value={c.id}>{c.company} — {c.name}</option>)}
@@ -278,7 +278,7 @@ function InvoiceComposer({ open, invoice, onClose, onSave }: {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Notes">
             <textarea
               value={notes}
@@ -323,7 +323,7 @@ export function InvoiceDetailPage({ path, navigate }: RouteProps) {
 
   if (!invoice) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <EmptyState icon={<Receipt className="h-5 w-5" />} title="Invoice not found" description="It may have been deleted."
           action={<Button size="sm" onClick={() => navigate('/customers/invoices')}>Back to Invoices</Button>} />
       </div>
@@ -359,7 +359,7 @@ export function InvoiceDetailPage({ path, navigate }: RouteProps) {
         }
       />
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat label="Amount Payable" value={formatCurrency(invoice.amountDue)} tone="gray" />
           <Stat label="Paid" value={formatCurrency(invoice.amountPaid)} tone="green" />
@@ -501,7 +501,7 @@ function RecordPaymentModal({ open, invoice, onClose, onSubmit }: {
           <Input type="number" min={0} value={amount} onChange={e => setAmount(e.target.value)} />
           {value > invoice.balance + 0.01 && <p className="text-[11px] text-red-600 mt-1">Cannot exceed the {formatCurrency(invoice.balance)} balance.</p>}
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Payment Date"><Input type="date" value={date} onChange={e => setDate(e.target.value)} /></Field>
           <Field label="Method">
             <Select value={method} onChange={e => setMethod(e.target.value as typeof method)}>

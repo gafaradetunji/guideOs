@@ -51,16 +51,16 @@ export function DashboardPage({ navigate }: RouteProps) {
         }
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4">
           <Card className="overflow-hidden">
             <CardBody className="p-0">
-              <div className="px-5 py-4 border-b border-ink-200/80 bg-[linear-gradient(135deg,rgba(15,23,42,0.03),rgba(37,99,235,0.07))]">
+              <div className="px-4 sm:px-5 py-4 border-b border-ink-200/80 bg-[linear-gradient(135deg,rgba(15,23,42,0.03),rgba(37,99,235,0.07))]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <p className="tech-label text-ink-500">Control Plane</p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-ink-900">Production workspace is stable with minor review backlog.</h2>
-                    <p className="mt-2 text-sm text-ink-600 max-w-2xl">
+                    <h2 className="mt-2 text-lg sm:text-xl lg:text-2xl font-semibold tracking-[-0.03em] text-ink-900">Production workspace is stable with minor review backlog.</h2>
+                    <p className="mt-2 text-xs sm:text-sm text-ink-600 max-w-2xl">
                       Identity, payroll, and support services are reachable. Two operational queues need manual attention before the next payroll cutoff.
                     </p>
                   </div>
@@ -74,7 +74,7 @@ export function DashboardPage({ navigate }: RouteProps) {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-ink-200/70">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-ink-200/70">
                 <ConsoleMetric label="Pending approvals" value="16" detail="Cross-module queue" />
                 <ConsoleMetric label="Change velocity" value="24 events/hr" detail="Average over 6 hours" />
                 <ConsoleMetric label="Exception rate" value="1.8%" detail="Below internal threshold" />
@@ -90,13 +90,13 @@ export function DashboardPage({ navigate }: RouteProps) {
                   <button
                     key={item.label}
                     onClick={() => navigate(item.path)}
-                    className="w-full flex items-center justify-between gap-3 px-5 py-3 text-left hover:bg-brand-50/30 transition-colors"
+                    className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3 text-left hover:bg-brand-50/30 transition-colors"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-ink-900">{item.label}</p>
-                      <p className="text-[11px] text-ink-500">Requires acknowledgment or disposition</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink-900 truncate">{item.label}</p>
+                      <p className="text-[11px] text-ink-500 truncate">Requires acknowledgment or disposition</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-lg font-semibold text-ink-900">{item.count}</span>
                       <ChevronRight className="h-4 w-4 text-ink-400" />
                     </div>
@@ -107,7 +107,7 @@ export function DashboardPage({ navigate }: RouteProps) {
           </Card>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Stat label="Directory Objects" value={String(totalHeadcount)} delta="3 identities added this month" tone="green" />
           <Stat label="Revenue Pipeline" value={formatCurrency(openPipeline)} delta={`${formatCurrency(receivables)} in receivables`} tone="green" />
           <Stat label="Support Backlog" value={String(activeTickets)} delta={`${urgentTickets} urgent cases`} tone="red" />
@@ -124,16 +124,16 @@ export function DashboardPage({ navigate }: RouteProps) {
             <CardBody className="p-0">
               <div className="divide-y divide-ink-100">
                 {modules.map(module => (
-                  <div key={module.name} className="px-5 py-4">
-                    <div className="flex items-center justify-between gap-3">
+                  <div key={module.name} className="px-4 sm:px-5 py-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-medium text-ink-900">{module.name}</p>
                           <StatusBadge status={module.status} />
                         </div>
                         <p className="text-[11px] text-ink-500 mt-1">{module.detail}</p>
                       </div>
-                      <div className="text-right min-w-[90px]">
+                      <div className="text-right min-w-[72px] sm:min-w-[90px] flex-shrink-0">
                         <p className="tech-label text-ink-400">Utilization</p>
                         <p className="text-sm font-semibold text-ink-900 mt-1">{module.progress}%</p>
                       </div>
@@ -167,7 +167,7 @@ export function DashboardPage({ navigate }: RouteProps) {
             <CardBody className="p-0">
               <div className="divide-y divide-ink-100">
                 {activities.slice(0, 8).map(a => (
-                  <div key={a.id} className="px-5 py-3.5 flex items-start gap-3 hover:bg-brand-50/20 transition-colors">
+                  <div key={a.id} className="px-4 sm:px-5 py-3.5 flex items-start gap-3 hover:bg-brand-50/20 transition-colors">
                     <Avatar name={a.actor} size={34} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -179,7 +179,7 @@ export function DashboardPage({ navigate }: RouteProps) {
                       </div>
                       <p className="text-[11px] text-ink-400 mt-1">{relativeTime(a.timestamp)} • event type `{a.type}`</p>
                     </div>
-                    <span className="text-[11px] font-mono uppercase tracking-[0.08em] text-ink-400 flex-shrink-0">
+                    <span className="hidden sm:block text-[11px] font-mono uppercase tracking-[0.08em] text-ink-400 flex-shrink-0">
                       {new Date(a.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -221,7 +221,7 @@ export function DashboardPage({ navigate }: RouteProps) {
 
 function ConsoleMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="bg-white/70 px-5 py-4">
+    <div className="bg-white/70 px-4 sm:px-5 py-4">
       <p className="tech-label text-ink-500">{label}</p>
       <p className="mt-2 text-xl font-semibold text-ink-900">{value}</p>
       <p className="mt-1 text-[11px] text-ink-500">{detail}</p>
@@ -233,8 +233,8 @@ function StatusLine({ icon, title, body }: { icon: React.ReactNode; title: strin
   return (
     <div className="rounded-xl border border-ink-200 bg-white/70 px-4 py-3">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5">{icon}</span>
-        <div>
+        <span className="mt-0.5 flex-shrink-0">{icon}</span>
+        <div className="min-w-0">
           <p className="text-sm font-medium text-ink-900">{title}</p>
           <p className="text-[11px] text-ink-500 mt-1 leading-relaxed">{body}</p>
         </div>
@@ -259,9 +259,9 @@ function SignalRow({
   return (
     <div className="rounded-xl border border-ink-200 bg-white/70 px-4 py-3">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5">{icon}</span>
+        <span className="mt-0.5 flex-shrink-0">{icon}</span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-ink-900 truncate">{title}</p>
+          <p className="text-sm font-medium text-ink-900 break-words">{title}</p>
           <p className="text-[11px] text-ink-500 mt-1">{body}</p>
           <button onClick={onClick} className="mt-2 inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.08em] text-brand-700 hover:text-brand-800">
             {action} <ChevronRight className="h-3 w-3" />
@@ -276,12 +276,12 @@ export function ActivityFeedPage() {
   return (
     <div>
       <PageHeader title="Event Stream" description="Normalized system events across GuideOS operational surfaces." />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Card>
           <CardBody className="p-0">
             <div className="divide-y divide-ink-100">
               {activities.map(a => (
-                <div key={a.id} className="px-5 py-3.5 flex items-start gap-3 hover:bg-brand-50/20 transition-colors">
+                <div key={a.id} className="px-4 sm:px-5 py-3.5 flex items-start gap-3 hover:bg-brand-50/20 transition-colors">
                   <Avatar name={a.actor} size={32} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-ink-700">
@@ -290,7 +290,7 @@ export function ActivityFeedPage() {
                     </p>
                     <p className="text-[11px] text-ink-400 mt-1">{a.module} • {relativeTime(a.timestamp)} • `{a.type}`</p>
                   </div>
-                  <span className="text-[11px] font-mono uppercase tracking-[0.08em] text-ink-400 flex-shrink-0">
+                  <span className="hidden sm:block text-[11px] font-mono uppercase tracking-[0.08em] text-ink-400 flex-shrink-0">
                     {new Date(a.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -311,12 +311,12 @@ export function NotificationsPage() {
   return (
     <div>
       <PageHeader title="Notifications" description={`${notifications.filter(notification => !notification.read).length} unread operator notifications and module exceptions.`} actions={<button onClick={markAllNotificationsRead} className="text-[11px] font-mono uppercase tracking-[0.08em] text-brand-700 hover:text-brand-800">Mark all as read</button>} />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Card>
           <CardBody className="p-0">
             <div className="divide-y divide-ink-100">
               {notifications.map(n => (
-                <div key={n.id} className={['px-5 py-4 hover:bg-brand-50/20 transition-colors flex items-start gap-3', n.read ? 'opacity-70' : ''].join(' ')}>
+                <div key={n.id} className={['px-4 sm:px-5 py-4 hover:bg-brand-50/20 transition-colors flex items-start gap-3', n.read ? 'opacity-70' : ''].join(' ')}>
                   <span className={['h-8 w-8 rounded-md flex items-center justify-center flex-shrink-0', toneClass[n.tone]].join(' ')}>
                     <span className="h-1.5 w-1.5 rounded-full bg-current" />
                   </span>
