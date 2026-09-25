@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   User, Briefcase, Laptop, FileText, FileBarChart, Mail, Phone, MapPin, Star,
   Download, CheckCircle2, Clock, AlertCircle,
@@ -13,9 +14,9 @@ import {
 import { useMockData } from '../../mock/MockDataProvider';
 import type { RouteProps } from '../../lib/types';
 
-export function EmployeeDetailPage({ path, navigate }: RouteProps) {
+export function EmployeeDetailPage({ navigate }: RouteProps) {
   const { employees } = useMockData();
-  const id = path.split('/').filter(Boolean)[1];
+  const { id = '' } = useParams();
   const employee = employees.find(e => e.id === id) || employees[1];
   const dept = getDepartment(employee.departmentId);
   const manager = employee.managerId ? employees.find(e => e.id === employee.managerId) : undefined;

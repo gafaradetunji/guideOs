@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Plus, Download, ArrowLeft, Check, CheckCircle2, Play, Trash2, Users, Wallet,
   ShieldCheck, FileText, ChevronRight, AlertTriangle,
@@ -382,9 +383,9 @@ function PayrollWizard({ open, onClose, navigate }: { open: boolean; onClose: ()
 
 // ----------------------------------------------------------- run detail
 
-export function PayrollRunDetailPage({ path, navigate }: RouteProps) {
+export function PayrollRunDetailPage({ navigate }: RouteProps) {
   const { payrollRuns, payslips, approvePayrollRun, processPayrollRun, markPayrollRunPaid } = useMockData();
-  const id = path.split('/').pop() || '';
+  const { id = '' } = useParams();
   const run = payrollRuns.find(r => r.id === id);
   const slips = payslips.filter(p => p.runId === id);
   const [openSlip, setOpenSlip] = useState<Payslip | null>(null);

@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Plus, Download, Send, Trash2, Receipt, CheckCircle2, Ban, CreditCard, ArrowLeft, Printer,
 } from 'lucide-react';
@@ -315,9 +316,9 @@ function InvoiceComposer({ open, invoice, onClose, onSave }: {
 
 // -------------------------------------------------------------- detail page
 
-export function InvoiceDetailPage({ path, navigate }: RouteProps) {
+export function InvoiceDetailPage({ navigate }: RouteProps) {
   const { invoices, sendInvoice, recordInvoicePayment, cancelInvoice } = useMockData();
-  const id = path.split('/').pop() || '';
+  const { id = '' } = useParams();
   const invoice = invoices.find(i => i.id === id);
   const [payOpen, setPayOpen] = useState(false);
 
