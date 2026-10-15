@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, Search, Bell, Plus, HelpCircle, Settings2, ChevronRight, Activity, ShieldCheck, Command, Menu, X } from 'lucide-react';
 import { navSections, routeCount } from '../../config/nav';
 import { Avatar } from '../ui';
+import { useAuth } from '@/auth/AuthContext';
 
 interface SidebarProps {
   path: string;
@@ -13,6 +14,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ path, onNavigate, collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
+  const { user, signOut } = useAuth();
   const activeRoot = path;
   // Below lg the sidebar is an off-canvas drawer, so the collapsed rail only applies from lg up.
   return (
@@ -124,11 +126,11 @@ export function Sidebar({ path, onNavigate, collapsed, onToggleCollapse, mobileO
             </div>
           </div>
         )}
-        <button className={['w-full flex items-center gap-2 p-2 rounded-md hover:bg-white/[0.04] transition-colors', collapsed ? 'lg:justify-center' : ''].join(' ')}>
-          <Avatar name="Fatima Ibrahim" size={28} />
+        <button onClick={() => { void signOut().then(() => onNavigate('/login')); }} className={['w-full flex items-center gap-2 p-2 rounded-md hover:bg-white/[0.04] transition-colors', collapsed ? 'lg:justify-center' : ''].join(' ')} title="Sign out">
+          <Avatar name={user?.fullName ?? 'GuideOS user'} size={28} />
           <div className={['text-left min-w-0 flex-1', collapsed ? 'lg:hidden' : ''].join(' ')}>
-            <p className="text-xs font-medium text-white truncate">Fatima Ibrahim</p>
-            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.08em] truncate">Super Admin</p>
+            <p className="text-xs font-medium text-white truncate">{user?.fullName ?? 'GuideOS user'}</p>
+            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.08em] truncate">Sign out</p>
           </div>
           <ChevronDown className={['h-3.5 w-3.5 text-slate-400', collapsed ? 'lg:hidden' : ''].join(' ')} />
         </button>

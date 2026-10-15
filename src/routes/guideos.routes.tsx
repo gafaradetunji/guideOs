@@ -3,6 +3,8 @@ import type { RouteObject } from 'react-router-dom';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import NotFound from '@/pages/errors/NotFound';
 import { withRouteProps } from '@/routes/withRouteProps';
+import ProtectedRoute from '@/routes/ProtectedRoute';
+import { ForgotPasswordPage, LoginPage, SignupPage, UpdatePasswordPage } from '@/pages/auth/AuthPages';
 
 import { DashboardPage, ActivityFeedPage, NotificationsPage } from '@/pages/dashboard/DashboardPage';
 import { EmployeeDirectoryPage, DepartmentsPage } from '@/pages/employees/EmployeeDirectoryPage';
@@ -78,150 +80,159 @@ const WorkflowsPageRoute = withRouteProps(WorkflowsPage);
  * under a different prefix without touching each entry.
  */
 export const guideosRoutes: RouteObject[] = [
+  { path: 'login', element: <LoginPage /> },
+  { path: 'signup', element: <SignupPage /> },
+  { path: 'forgot-password', element: <ForgotPasswordPage /> },
+  { path: 'update-password', element: <UpdatePasswordPage /> },
   {
-    path: '/',
-    element: <DashboardLayout />,
+    element: <ProtectedRoute />,
     children: [
-      // ----- Dashboard -----
-      { index: true, element: <DashboardPageRoute /> },
-      { path: 'activity', element: <ActivityFeedPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-
-      // ----- CRM -----
       {
-        path: 'crm',
+        path: '/',
+        element: <DashboardLayout />,
         children: [
-          { path: 'leads', element: <LeadsPageRoute /> },
-          { path: 'contacts', element: <ContactsPageRoute /> },
-          { path: 'companies', element: <CompaniesPageRoute /> },
-          { path: 'opportunities', element: <OpportunitiesPageRoute /> },
-          { path: 'pipelines', element: <PipelinesPageRoute /> },
+          // ----- Dashboard -----
+          { index: true, element: <DashboardPageRoute /> },
+          { path: 'activity', element: <ActivityFeedPage /> },
+          { path: 'notifications', element: <NotificationsPage /> },
+
+          // ----- CRM -----
+          {
+            path: 'crm',
+            children: [
+              { path: 'leads', element: <LeadsPageRoute /> },
+              { path: 'contacts', element: <ContactsPageRoute /> },
+              { path: 'companies', element: <CompaniesPageRoute /> },
+              { path: 'opportunities', element: <OpportunitiesPageRoute /> },
+              { path: 'pipelines', element: <PipelinesPageRoute /> },
+            ],
+          },
+
+          // ----- Customers -----
+          {
+            path: 'customers',
+            children: [
+              { index: true, element: <CustomerListPageRoute /> },
+              { path: 'contracts', element: <ContractsPageRoute /> },
+              { path: 'invoices', element: <InvoicesPageRoute /> },
+              { path: 'invoices/:id', element: <InvoiceDetailPageRoute /> },
+            ],
+          },
+
+          // ----- Employees -----
+          {
+            path: 'employees',
+            children: [
+              { index: true, element: <EmployeeDirectoryPageRoute /> },
+              { path: 'departments', element: <DepartmentsPageRoute /> },
+              { path: 'org-chart', element: <OrgChartPageRoute /> },
+              { path: ':id', element: <EmployeeDetailPageRoute /> },
+            ],
+          },
+
+          // ----- Recruitment -----
+          {
+            path: 'recruitment',
+            children: [
+              { path: 'candidates', element: <CandidatesPageRoute /> },
+              { path: 'positions', element: <PositionsPageRoute /> },
+            ],
+          },
+
+          // ----- Onboarding -----
+          {
+            path: 'onboarding',
+            children: [
+              { index: true, element: <OnboardingChecklistPageRoute /> },
+              { path: 'wizard', element: <OnboardingPageRoute /> },
+            ],
+          },
+
+          // ----- Payroll -----
+          {
+            path: 'payroll',
+            children: [
+              { index: true, element: <PayrollRunsPageRoute /> },
+              { path: 'runs/:id', element: <PayrollRunDetailPageRoute /> },
+              { path: 'structure', element: <SalaryStructurePageRoute /> },
+              { path: 'payslips', element: <PayslipsPageRoute /> },
+            ],
+          },
+
+          // ----- Leave -----
+          {
+            path: 'leave',
+            children: [
+              { index: true, element: <LeaveRequestsPageRoute /> },
+              { path: 'calendar', element: <LeaveCalendarPageRoute /> },
+            ],
+          },
+
+          // ----- Attendance -----
+          {
+            path: 'attendance',
+            children: [
+              { index: true, element: <AttendancePageRoute /> },
+              { path: 'timesheets', element: <TimesheetsPageRoute /> },
+            ],
+          },
+
+          // ----- Assets -----
+          {
+            path: 'assets',
+            children: [
+              { index: true, element: <AssetsPageRoute /> },
+              { path: 'assigned', element: <AssetsAssignedPageRoute /> },
+            ],
+          },
+
+          // ----- Finance -----
+          {
+            path: 'finance',
+            children: [
+              { path: 'expenses', element: <ExpensesPageRoute /> },
+              { path: 'budgets', element: <BudgetsPageRoute /> },
+            ],
+          },
+
+          // ----- Support -----
+          {
+            path: 'support',
+            children: [
+              { path: 'tickets', element: <TicketsPageRoute /> },
+              { path: 'escalations', element: <EscalationsPageRoute /> },
+            ],
+          },
+
+          // ----- Reports -----
+          {
+            path: 'reports',
+            children: [
+              { path: 'growth', element: <EmployeeGrowthReportPageRoute /> },
+              { path: 'payroll', element: <PayrollCostReportPageRoute /> },
+            ],
+          },
+
+          // ----- Settings -----
+          {
+            path: 'settings',
+            children: [
+              { index: true, element: <SettingsPageRoute /> },
+              { path: 'roles', element: <RolesPageRoute /> },
+            ],
+          },
+
+          // ----- Standalone modules -----
+          { path: 'compliance', element: <CompliancePageRoute /> },
+          { path: 'knowledge-base', element: <KnowledgeBasePageRoute /> },
+          { path: 'projects', element: <ProjectsPageRoute /> },
+          { path: 'workflows', element: <WorkflowsPageRoute /> },
+          { path: 'integrations', element: <IntegrationsPageRoute /> },
+
+          // Unmatched paths still render inside the shell, so the sidebar stays put.
+          { path: '*', element: <NotFound /> },
         ],
       },
-
-      // ----- Customers -----
-      {
-        path: 'customers',
-        children: [
-          { index: true, element: <CustomerListPageRoute /> },
-          { path: 'contracts', element: <ContractsPageRoute /> },
-          { path: 'invoices', element: <InvoicesPageRoute /> },
-          { path: 'invoices/:id', element: <InvoiceDetailPageRoute /> },
-        ],
-      },
-
-      // ----- Employees -----
-      {
-        path: 'employees',
-        children: [
-          { index: true, element: <EmployeeDirectoryPageRoute /> },
-          { path: 'departments', element: <DepartmentsPageRoute /> },
-          { path: 'org-chart', element: <OrgChartPageRoute /> },
-          { path: ':id', element: <EmployeeDetailPageRoute /> },
-        ],
-      },
-
-      // ----- Recruitment -----
-      {
-        path: 'recruitment',
-        children: [
-          { path: 'candidates', element: <CandidatesPageRoute /> },
-          { path: 'positions', element: <PositionsPageRoute /> },
-        ],
-      },
-
-      // ----- Onboarding -----
-      {
-        path: 'onboarding',
-        children: [
-          { index: true, element: <OnboardingChecklistPageRoute /> },
-          { path: 'wizard', element: <OnboardingPageRoute /> },
-        ],
-      },
-
-      // ----- Payroll -----
-      {
-        path: 'payroll',
-        children: [
-          { index: true, element: <PayrollRunsPageRoute /> },
-          { path: 'runs/:id', element: <PayrollRunDetailPageRoute /> },
-          { path: 'structure', element: <SalaryStructurePageRoute /> },
-          { path: 'payslips', element: <PayslipsPageRoute /> },
-        ],
-      },
-
-      // ----- Leave -----
-      {
-        path: 'leave',
-        children: [
-          { index: true, element: <LeaveRequestsPageRoute /> },
-          { path: 'calendar', element: <LeaveCalendarPageRoute /> },
-        ],
-      },
-
-      // ----- Attendance -----
-      {
-        path: 'attendance',
-        children: [
-          { index: true, element: <AttendancePageRoute /> },
-          { path: 'timesheets', element: <TimesheetsPageRoute /> },
-        ],
-      },
-
-      // ----- Assets -----
-      {
-        path: 'assets',
-        children: [
-          { index: true, element: <AssetsPageRoute /> },
-          { path: 'assigned', element: <AssetsAssignedPageRoute /> },
-        ],
-      },
-
-      // ----- Finance -----
-      {
-        path: 'finance',
-        children: [
-          { path: 'expenses', element: <ExpensesPageRoute /> },
-          { path: 'budgets', element: <BudgetsPageRoute /> },
-        ],
-      },
-
-      // ----- Support -----
-      {
-        path: 'support',
-        children: [
-          { path: 'tickets', element: <TicketsPageRoute /> },
-          { path: 'escalations', element: <EscalationsPageRoute /> },
-        ],
-      },
-
-      // ----- Reports -----
-      {
-        path: 'reports',
-        children: [
-          { path: 'growth', element: <EmployeeGrowthReportPageRoute /> },
-          { path: 'payroll', element: <PayrollCostReportPageRoute /> },
-        ],
-      },
-
-      // ----- Settings -----
-      {
-        path: 'settings',
-        children: [
-          { index: true, element: <SettingsPageRoute /> },
-          { path: 'roles', element: <RolesPageRoute /> },
-        ],
-      },
-
-      // ----- Standalone modules -----
-      { path: 'compliance', element: <CompliancePageRoute /> },
-      { path: 'knowledge-base', element: <KnowledgeBasePageRoute /> },
-      { path: 'projects', element: <ProjectsPageRoute /> },
-      { path: 'workflows', element: <WorkflowsPageRoute /> },
-      { path: 'integrations', element: <IntegrationsPageRoute /> },
-
-      // Unmatched paths still render inside the shell, so the sidebar stays put.
-      { path: '*', element: <NotFound /> },
     ],
   },
 ];

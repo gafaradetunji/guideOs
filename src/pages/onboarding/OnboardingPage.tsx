@@ -41,6 +41,7 @@ export function OnboardingPage({ navigate }: RouteProps) {
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [form, setForm] = useState<OnboardingDraft>(() => onboardingDraft);
   const [statusText, setStatusText] = useState('Draft synced locally');
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setForm(onboardingDraft);
@@ -49,6 +50,12 @@ export function OnboardingPage({ navigate }: RouteProps) {
   useEffect(() => {
     setOnboardingDraft(form);
   }, [form, setOnboardingDraft]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timeout = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
 
   const availableTeams = useMemo(
     () => teams.filter(team => team.departmentId === form.departmentId),
@@ -65,18 +72,27 @@ export function OnboardingPage({ navigate }: RouteProps) {
   const completion = Math.round((step / steps.length) * 100);
   const uploadedRequiredCount = requiredDocuments.filter(name => form.uploadedDocuments.includes(name)).length;
   const allRequiredUploaded = requiredDocuments.every(name => form.uploadedDocuments.includes(name));
-  const canSubmit = Boolean(
-    form.firstName.trim() &&
-    form.lastName.trim() &&
-    form.email.trim() &&
-    form.jobTitle.trim() &&
-    form.startDate &&
-    form.annualSalary &&
-    form.accountNumber &&
-    form.tin &&
-    allRequiredUploaded &&
-    form.confirmed
-  );
+  const missingRequirements = [
+    !form.firstName.trim() && 'first name',
+    !form.lastName.trim() && 'last name',
+    !form.email.trim() && 'email',
+    !form.phone.trim() && 'phone number',
+    !form.dateOfBirth && 'date of birth',
+    !form.city.trim() && 'city',
+    !form.jobTitle.trim() && 'job title',
+    !form.startDate && 'start date',
+    !form.annualSalary && 'annual salary',
+    !form.accountName.trim() && 'account name',
+    !form.accountNumber.trim() && 'account number',
+    !form.bvn.trim() && 'BVN',
+    !form.tin.trim() && 'TIN',
+    !form.nsitfNumber.trim() && 'NSITF number',
+    !form.pensionAccountNumber.trim() && 'pension account number',
+    !form.nhfNumber.trim() && 'NHF number',
+    !allRequiredUploaded && 'all required documents',
+    !form.confirmed && 'confirmation checkbox',
+  ].filter((requirement): requirement is string => Boolean(requirement));
+  const canSubmit = missingRequirements.length === 0;
 
   function updateField<K extends keyof OnboardingDraft>(key: K, value: OnboardingDraft[K]) {
     setForm(current => ({ ...current, [key]: value }));
@@ -100,7 +116,8 @@ export function OnboardingPage({ navigate }: RouteProps) {
   function submit() {
     if (!canSubmit) return;
     const employee = createEmployeeFromOnboarding(form);
-    navigate(`/employees/${employee.id}`);
+    setToast('Onboarding submitted');
+    window.setTimeout(() => navigate(`/employees/${employee.id}`), 900);
   }
 
   function toggleDocument(name: string) {
@@ -175,7 +192,10 @@ export function OnboardingPage({ navigate }: RouteProps) {
                   {step < 7 ? (
                     <Button size="md" onClick={next} rightIcon={<ChevronRight className="h-4 w-4" />}>Continue</Button>
                   ) : (
-                    <Button size="md" onClick={submit} leftIcon={<Sparkles className="h-4 w-4" />} disabled={!canSubmit}>Submit Onboarding</Button>
+                    <div className="flex flex-col items-end gap-1.5">
+                      {!canSubmit && <p className="max-w-xs text-right text-[10px] leading-4 text-red-600">Still needed: {missingRequirements.slice(0, 3).join(', ')}{missingRequirements.length > 3 ? ` + ${missingRequirements.length - 3} more` : ''}</p>}
+                      <Button size="md" onClick={submit} leftIcon={<Sparkles className="h-4 w-4" />} disabled={!canSubmit}>Submit Onboarding</Button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -215,6 +235,13 @@ export function OnboardingPage({ navigate }: RouteProps) {
           </Card>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-emerald-800 shadow-pop" role="status" aria-live="polite">
+          <Check className="h-4 w-4 text-emerald-600" />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

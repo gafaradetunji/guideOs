@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Plus, Download, Send, Trash2, Receipt, CheckCircle2, Ban, CreditCard, ArrowLeft, Printer,
@@ -34,6 +34,13 @@ export function InvoicesPage({ navigate }: RouteProps) {
   const [page, setPage] = useState(1);
   const [composerOpen, setComposerOpen] = useState(false);
   const [editing, setEditing] = useState<Invoice | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timeout = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
 
   const filtered = useMemo(() => invoices.filter(inv =>
     (!statusFilter || inv.status === statusFilter) &&
@@ -57,6 +64,7 @@ export function InvoicesPage({ navigate }: RouteProps) {
   function handleSave(input: InvoiceDraftInput) {
     if (editing) updateInvoice(editing.id, input);
     else createInvoice(input);
+    setToast(input.send ? (editing ? 'Invoice updated and sent' : 'Invoice created') : editing ? 'Invoice saved' : 'Invoice saved as draft');
     setComposerOpen(false);
     setEditing(null);
   }
@@ -148,6 +156,13 @@ export function InvoicesPage({ navigate }: RouteProps) {
         onClose={() => { setComposerOpen(false); setEditing(null); }}
         onSave={handleSave}
       />
+
+      {toast && (
+        <div className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-emerald-800 shadow-pop" role="status" aria-live="polite">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
