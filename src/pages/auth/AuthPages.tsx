@@ -1,13 +1,13 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, Command, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Command, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/auth/AuthContext';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
 
 export function LoginPage() {
-  const { signIn, demoEmail, demoPassword, usesSupabase } = useAuth();
+  const { signIn, demoEmail, demoPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -34,13 +34,43 @@ export function LoginPage() {
   }
 
   return (
-    <AuthPage mode="login" eyebrow="Welcome back" title="Sign in to your control plane" description="Keep your people, payroll, customers, and operations moving from one calm workspace.">
+    <AuthPage
+      mode="login"
+      eyebrow="GuideAI product demo"
+      title="Explore GuideOS with a demo account"
+      description="This is a fully local demo environment built to show you GuideAI capabilities. No real user account is required."
+    >
+      <div className="mb-6 rounded-2xl border-2 border-brand-300 bg-gradient-to-br from-brand-50 via-white to-blue-50 p-4 shadow-sm shadow-brand-900/5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm shadow-brand-600/30">
+              <KeyRound className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-ink-900">Demo access</p>
+                <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-800">Recommended</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-ink-600">Use the sample account below to see the product in action. These are demo credentials, not a personal user account.</p>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Credential label="Email" value={demoEmail} />
+            <Credential label="Password" value={demoPassword} />
+          </div>
+          <button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); }} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 text-xs font-semibold text-white shadow-sm shadow-brand-600/25 transition-colors hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60 focus-visible:ring-offset-2">
+            Use demo credentials <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+      </div>
+      <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+        <p className="font-semibold">Test environment only</p>
+        <p className="mt-0.5 text-amber-800">All dashboard records are fictional test data. This is not a production dashboard and no real business data is connected.</p>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {notice && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs leading-5 text-emerald-800">{notice}</p>}
         <Field label="Work email" icon={<Mail className="h-4 w-4" />}>
           <input value={email} onChange={event => setEmail(event.target.value)} type="email" autoComplete="email" placeholder="you@company.com" required className="auth-input" />
         </Field>
-        <Field label="Password" icon={<LockKeyhole className="h-4 w-4" />} action={<Link to="/forgot-password" className="text-xs font-medium text-brand-700 hover:text-brand-900">Forgot password?</Link>}>
+        <Field label="Password" icon={<LockKeyhole className="h-4 w-4" />}>
           <div className="relative">
             <input value={password} onChange={event => setPassword(event.target.value)} type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Enter your password" required className="auth-input pr-11" />
             <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-ink-400 hover:text-ink-700" aria-label={showPassword ? 'Hide password' : 'Show password'}>
@@ -51,15 +81,16 @@ export function LoginPage() {
         {error && <ErrorMessage>{error}</ErrorMessage>}
         <Button type="submit" size="lg" className="w-full" loading={loading} rightIcon={<ArrowRight className="h-4 w-4" />}>Sign in</Button>
       </form>
-
-      {!usesSupabase && (
-        <button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); }} className="mt-4 w-full rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-left text-xs text-brand-900 hover:bg-brand-100 transition-colors">
-          <span className="font-semibold">Use demo access</span>
-          <span className="block mt-0.5 text-brand-700">{demoEmail} · {demoPassword}</span>
-        </button>
-      )}
-      <AuthSwitch prompt="New to GuideOS?" action="Create an account" to="/signup" />
     </AuthPage>
+  );
+}
+
+function Credential({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-brand-200/80 bg-white/80 px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-400">{label}</p>
+      <p className="mt-1 truncate font-mono text-xs font-medium text-ink-900">{value}</p>
+    </div>
   );
 }
 
@@ -118,7 +149,7 @@ export function SignupPage() {
 }
 
 export function ForgotPasswordPage() {
-  const { resetPassword, usesSupabase } = useAuth();
+  const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
@@ -143,7 +174,7 @@ export function ForgotPasswordPage() {
       {sent ? (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
           <p className="font-semibold">Check your inbox</p>
-          <p className="mt-1 text-xs leading-5">{usesSupabase ? 'If an account exists for that email, a reset link is on its way.' : 'Demo mode does not send email, but your account is ready to use.'}</p>
+          <p className="mt-1 text-xs leading-5">This local demo does not send email. Return to sign in and use your local account or the demo credentials.</p>
           <Link to="/login" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 hover:text-emerald-950">Back to sign in <ArrowRight className="h-3.5 w-3.5" /></Link>
         </div>
       ) : (
@@ -221,7 +252,7 @@ function AuthPage({ mode, eyebrow, title, description, children }: { mode: AuthM
               <div><p className="text-sm font-semibold tracking-wide">GuideOS</p><p className="text-[10px] font-mono uppercase tracking-[0.16em] text-blue-200">Business operating system</p></div>
             </div>
             <div className="mt-24 xl:mt-32">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-blue-200">NerithonX / Production</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-blue-200">GuideAI / Product demo</p>
               <h2 className="mt-5 max-w-lg text-4xl font-semibold leading-[1.08] tracking-[-0.03em] xl:text-5xl">The operating layer for teams that keep moving.</h2>
               <p className="mt-6 max-w-md text-sm leading-6 text-blue-100/75">GuideOS connects the work behind the work — people, money, customers, and decisions — so your business has a reliable source of truth.</p>
             </div>
@@ -234,7 +265,7 @@ function AuthPage({ mode, eyebrow, title, description, children }: { mode: AuthM
           <div className="mb-8 flex items-center gap-3 lg:hidden"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white"><Command className="h-4 w-4" /></div><div><p className="text-sm font-semibold text-ink-900">GuideOS</p><p className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-500">Control plane</p></div></div>
           <div className="mb-7"><p className="tech-label text-brand-700">{eyebrow}</p><h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-ink-900">{title}</h1><p className="mt-2 text-sm leading-6 text-ink-500">{description}</p></div>
           {children}
-          {mode === 'login' && <p className="mt-8 text-center text-[11px] text-ink-400">Your workspace session is protected with secure authentication.</p>}
+          {mode === 'login' && <p className="mt-8 text-center text-[11px] leading-5 text-ink-400">Demo environment only · fictional test data · not a production dashboard</p>}
         </div>
       </main>
     </div>

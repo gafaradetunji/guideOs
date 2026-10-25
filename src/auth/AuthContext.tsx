@@ -2,13 +2,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
 
 const SESSION_KEY = 'guideos-auth-session-v1';
 const USERS_KEY = 'guideos-auth-users-v1';
@@ -28,7 +25,6 @@ interface StoredUser extends AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  usesSupabase: boolean;
   demoEmail: string;
   demoPassword: string;
   signIn: (email: string, password: string) => Promise<void>;
@@ -39,14 +35,6 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function fromSupabaseUser(user: User): AuthUser {
-  return {
-    id: user.id,
-    email: user.email ?? '',
-    fullName: String(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'GuideOS user'),
-  };
-}
 
 function readLocalUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
@@ -79,43 +67,11 @@ function writeLocalUsers(users: StoredUser[]) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const usesSupabase = Boolean(supabase);
-  const [user, setUser] = useState<AuthUser | null>(() => (usesSupabase ? null : readLocalUser()));
-  const [loading, setLoading] = useState(usesSupabase);
-
-  useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
-    let mounted = true;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (mounted) {
-        setUser(data.session?.user ? fromSupabaseUser(data.session.user) : null);
-        setLoading(false);
-      }
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setUser(session?.user ? fromSupabaseUser(session.user) : null);
-    });
-
-    return () => {
-      mounted = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>(() => readLocalUser());
+  const loading = false;
 
   const signIn = useCallback(async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-    if (supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-      if (error) throw new Error(error.message);
-      if (data.user) setUser(fromSupabaseUser(data.user));
-      return;
-    }
-
     const localUsers = readLocalUsers();
     const demoMatches = normalizedEmail === DEMO_EMAIL && password === DEMO_PASSWORD;
     const matchingUser = localUsers.find(candidate => candidate.email === normalizedEmail && candidate.password === password);
@@ -133,17 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback(async (fullName: string, email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-    if (supabase) {
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: { data: { full_name: fullName.trim() } },
-      });
-      if (error) throw new Error(error.message);
-      if (data.user && data.session) setUser(fromSupabaseUser(data.user));
-      return { needsEmailConfirmation: !data.session };
-    }
-
     const localUsers = readLocalUsers();
     if (localUsers.some(candidate => candidate.email === normalizedEmail) || normalizedEmail === DEMO_EMAIL) {
       throw new Error('An account with this email already exists.');
@@ -162,21 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
-    if (supabase) {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: `${window.location.origin}/update-password`,
-      });
-      if (error) throw new Error(error.message);
-    }
+    // Local mode has no email service. Keep the action intentionally local and
+    // let the recovery screen explain that no message is sent.
+    void email.trim().toLowerCase();
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {
-    if (supabase) {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw new Error(error.message);
-      return;
-    }
-
     const currentUser = readLocalUser();
     if (!currentUser) throw new Error('Your recovery session has expired. Please sign in again.');
     const localUsers = readLocalUsers();
@@ -184,10 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw new Error(error.message);
-    }
     writeLocalUser(null);
     setUser(null);
   }, []);
@@ -195,7 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(() => ({
     user,
     loading,
-    usesSupabase,
     demoEmail: DEMO_EMAIL,
     demoPassword: DEMO_PASSWORD,
     signIn,
@@ -203,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPassword,
     updatePassword,
     signOut,
-  }), [loading, resetPassword, signIn, signOut, signUp, updatePassword, user, usesSupabase]);
+  }), [loading, resetPassword, signIn, signOut, signUp, updatePassword, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
