@@ -68,13 +68,16 @@ export function OnboardingPage({ navigate }: RouteProps) {
   );
 
   const fullDraftName = `${form.firstName} ${form.lastName}`.trim();
-  const previewName = fullDraftName || 'New Employee';
+  const previewName = form.usePreferredName && form.preferredName.trim()
+    ? `${form.preferredName.trim()} ${form.lastName}`.trim()
+    : fullDraftName || 'New Employee';
   const completion = Math.round((step / steps.length) * 100);
   const uploadedRequiredCount = requiredDocuments.filter(name => form.uploadedDocuments.includes(name)).length;
   const allRequiredUploaded = requiredDocuments.every(name => form.uploadedDocuments.includes(name));
   const missingRequirements = [
     !form.firstName.trim() && 'first name',
     !form.lastName.trim() && 'last name',
+    form.usePreferredName && !form.preferredName.trim() && 'preferred name',
     !form.email.trim() && 'email',
     !form.phone.trim() && 'phone number',
     !form.dateOfBirth && 'date of birth',
@@ -257,6 +260,20 @@ function PersonalStep({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Field label="First Name" required><Input value={form.firstName} onChange={event => onChange('firstName', event.target.value)} placeholder="Adaobi" /></Field>
       <Field label="Last Name" required><Input value={form.lastName} onChange={event => onChange('lastName', event.target.value)} placeholder="Okoye" /></Field>
+      <label className="md:col-span-2 flex items-center gap-2 text-xs text-ink-600 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={form.usePreferredName}
+          onChange={event => onChange('usePreferredName', event.target.checked)}
+          className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+        />
+        <span>Employee uses a preferred name</span>
+      </label>
+      {form.usePreferredName && (
+        <Field label="Preferred Name" required full>
+          <Input value={form.preferredName} onChange={event => onChange('preferredName', event.target.value)} placeholder="Ada" autoFocus />
+        </Field>
+      )}
       <Field label="Email" required><Input value={form.email} onChange={event => onChange('email', event.target.value)} type="email" placeholder="adaobi.okoye@nerithonx.com" /></Field>
       <Field label="Phone" required><Input value={form.phone} onChange={event => onChange('phone', event.target.value)} placeholder="+234 803 123 4567" /></Field>
       <Field label="Date of Birth" required><Input value={form.dateOfBirth} onChange={event => onChange('dateOfBirth', event.target.value)} type="date" /></Field>
@@ -531,6 +548,7 @@ function ReviewStep({
         onEdit={() => onEditStep(1)}
         rows={[
           ['Name', `${form.firstName} ${form.lastName}`.trim() || 'Not entered'],
+          ['Preferred Name', form.usePreferredName ? form.preferredName || 'Not entered' : 'Not used'],
           ['Email', form.email || 'Not entered'],
           ['Phone', form.phone || 'Not entered'],
           ['Location', `${form.city}, ${form.country}`.replace(/^,\s*/, '') || 'Not entered'],

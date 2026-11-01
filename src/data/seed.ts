@@ -33,6 +33,7 @@ export interface Employee {
   tin?: string;
   level: string;
   pronouns?: string;
+  preferredName?: string;
   birthDate?: string;
   emergencyContact?: { name: string; phone: string; relationship: string };
   address?: string;

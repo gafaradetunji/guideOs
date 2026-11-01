@@ -47,6 +47,8 @@ export interface NotificationItem {
 export interface OnboardingDraft {
   firstName: string;
   lastName: string;
+  usePreferredName: boolean;
+  preferredName: string;
   email: string;
   phone: string;
   dateOfBirth: string;
@@ -179,6 +181,8 @@ const initialNotifications: NotificationItem[] = [
 export const defaultOnboardingDraft: OnboardingDraft = {
   firstName: '',
   lastName: '',
+  usePreferredName: false,
+  preferredName: '',
   email: '',
   phone: '',
   dateOfBirth: '',
@@ -243,9 +247,14 @@ function getStoredState(): MockState {
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (!raw) return cloneInitialState();
   try {
+    const stored = JSON.parse(raw) as Partial<MockState>;
     return {
       ...cloneInitialState(),
-      ...JSON.parse(raw),
+      ...stored,
+      onboardingDraft: {
+        ...defaultOnboardingDraft,
+        ...(stored.onboardingDraft ?? {}),
+      },
     } as MockState;
   } catch {
     return cloneInitialState();
@@ -317,6 +326,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       id,
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
+      preferredName: input.usePreferredName ? input.preferredName.trim() || undefined : undefined,
       email: input.email.trim(),
       phone: input.phone.trim(),
       jobTitle: input.jobTitle.trim(),

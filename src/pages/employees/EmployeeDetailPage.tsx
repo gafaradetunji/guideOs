@@ -200,6 +200,7 @@ function PersonalTab({ employee }: { employee: Employee }) {
         <CardBody>
           <Field label="First Name" value={employee.firstName} />
           <Field label="Last Name" value={employee.lastName} />
+          <Field label="Preferred Name" value={employee.preferredName || '—'} />
           <Field label="Pronouns" value={employee.pronouns || '—'} />
           <Field label="Birth Date" value={employee.birthDate ? formatDate(employee.birthDate) : '—'} />
           <Field label="Personal Email" value={employee.email} />
